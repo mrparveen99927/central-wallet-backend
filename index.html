@@ -1,211 +1,487 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Central Wallet - Auth System</title>
-<style>
-/* 🎨 सभी कलर्स और स्टाइल्स पूरी तरह लोकल (Hardcoded) हैं */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-body { background: #000000; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-.auth-container { width: 100%; max-width: 400px; background: #121212; padding: 24px; border-radius: 20px; border: 1px solid #1c1c1c; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-.tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #222; }
-.tab-btn { flex: 1; padding: 12px; background: none; border: none; color: #888; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
-.tab-btn.active { color: #9d4edd; border-bottom: 2px solid #9d4edd; }
-.hidden { display: none; }
-.input-group { margin-bottom: 16px; }
-.input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 6px; }
-.input-group input { width: 100%; padding: 12px; background: #000000; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 15px; outline: none; }
-.input-group input:focus { border-color: #9d4edd; }
-.row { display: flex; gap: 10px; }
-.submit-btn { width: 100%; padding: 14px; background: #9d4edd; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-.submit-btn:hover { background: #7b2cbf; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Wallet - Gaming Hub</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="https://cloudflare.com">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Open Sans', sans-serif;
+        }
 
-/* 🌟 100% कस्टम लोकल पॉपअप बॉक्स की स्टाइल */
-.custom-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; }
-.custom-popup { background: #1e1e1e; border: 1px solid #333; padding: 24px; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popupShow 0.3s ease-out; }
-@keyframes popupShow { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.popup-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-.popup-text { font-size: 14px; color: #aaa; margin-bottom: 20px; line-height: 1.4; }
-.popup-btn { padding: 10px 24px; background: #9d4edd; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-.popup-btn:hover { background: #7b2cbf; }
-</style>
+        body {
+            background-color: #ffffff; /* PhonePe Clean White Background */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 20px;
+        }
+
+        .auth-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 450px;
+            padding: 10px 5px;
+        }
+
+        /* Clean Header Without Logo Icon */
+        .brand-header {
+            text-align: left;
+            margin-bottom: 35px;
+            padding-left: 5px;
+        }
+
+        .brand-header h2 {
+            color: #1a1a1a;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-header p {
+            color: #666666;
+            font-size: 14px;
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        /* PhonePe Input Style Structure */
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+            width: 100%;
+        }
+
+        /* First Name & Last Name Layout Row */
+        .form-row {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #5f259f; /* PhonePe Purple Headings */
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label span {
+            color: #888888;
+            font-size: 11px;
+            text-transform: none;
+            font-weight: 400;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 5px;
+            color: #5f259f; /* Purple Icons */
+            font-size: 16px;
+        }
+
+        /* PhonePe Clean Bottom Line Inputs */
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 10px 8px 32px;
+            border: none;
+            border-bottom: 1.5px solid #cccccc; 
+            font-size: 16px;
+            color: #222222;
+            outline: none;
+            transition: all 0.2s ease;
+            background-color: transparent;
+            font-weight: 500;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #aaaaaa;
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        .input-wrapper input:focus {
+            border-bottom: 2px solid #5f259f; /* Purple underline on click */
+        }
+
+        /* PhonePe Rounded Action Button */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: #5f259f;
+            border: none;
+            border-radius: 25px; /* Fully Rounded Like PhonePe */
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 15px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary:hover {
+            background: #4a1c7e;
+        }
+
+        .switch-form-text {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #444444;
+        }
+
+        .switch-form-text a {
+            color: #5f259f;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Premium Popups */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-box {
+            background: #ffffff;
+            padding: 30px 24px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 340px;
+            width: 85%;
+            transform: translateY(20px);
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .popup-overlay.active .popup-box {
+            transform: translateY(0);
+        }
+
+        .popup-icon {
+            font-size: 50px;
+            margin-bottom: 12px;
+        }
+
+        .popup-icon.success { color: #12b76a; }
+        .popup-icon.error { color: #f04438; }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .popup-message {
+            font-size: 13px;
+            color: #666666;
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        .popup-btn {
+            width: 100%;
+            padding: 12px;
+            background: #5f259f;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+        }
+    </style>
 </head>
 <body>
 
-<div class="auth-container">
-    <div class="tabs">
-        <button id="login-tab" class="tab-btn active" onclick="switchTab('login')">LOGIN</button>
-        <button id="reg-tab" class="tab-btn" onclick="switchTab('register')">REGISTER</button>
-    </div>
-
-    <!-- Login Section -->
-    <div id="login-section">
-        <div class="input-group">
-            <label>UID, Mobile Number, or Gmail ID</label>
-            <input type="text" id="login-key" placeholder="Enter UID, Mobile or Gmail">
-        </div>
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="login-pass" placeholder="Enter your password">
-        </div>
-        <button class="submit-btn" onclick="handleLogin()">Sign In</button>
-    </div>
-
-    <!-- Register Section -->
-    <div id="register-section" class="hidden">
-        <div class="row">
-            <div class="input-group" style="flex: 1;">
-                <label>First Name</label>
-                <input type="text" id="reg-first" placeholder="John">
-            </div>
-            <div class="input-group" style="flex: 1;">
-                <label>Last Name</label>
-                <input type="text" id="reg-last" placeholder="Doe">
-            </div>
-        </div>
-        <div class="input-group">
-            <label>Gmail ID</label>
-            <input type="email" id="reg-gmail" placeholder="name@gmail.com">
-        </div>
-        <div class="input-group">
-            <label>10-Digit Mobile Number</label>
-            <input type="text" id="reg-mobile" placeholder="Enter mobile number" maxlength="10">
-        </div>
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="reg-pass" placeholder="Create password">
-        </div>
-        <div class="input-group">
-            <label>Confirm Password</label>
-            <input type="password" id="reg-cpass" placeholder="Re-enter password">
-        </div>
-        <div class="input-group">
-            <label>Refer / Invite Code (Optional)</label>
-            <input type="text" id="reg-invite" placeholder="e.g. JOHN1234" style="text-transform: uppercase;">
-        </div>
-        <button class="submit-btn" onclick="handleRegister()">Complete Sign Up</button>
-    </div>
-</div>
-
-<!-- 🌟 कस्टम लोकल पॉपअप का HTML स्ट्रक्चर -->
-<div id="popup-overlay" class="custom-popup-overlay">
-    <div class="custom-popup">
-        <div id="popup-title" class="popup-title" style="color: #ffffff;">Notification</div>
-        <div id="popup-text" class="popup-text">Message goes here.</div>
-        <button class="popup-btn" onclick="closePopup()">OK</button>
-    </div>
-</div>
-
-<script>
-// ⚡ आपका लाइव रेंडर सर्वर लिंक
-const API_URL = "https://central-wallet-game-api.onrender.com"; 
-
-// 🛠️ कस्टम लोकल पॉपअप दिखाने का जावास्क्रिप्ट फंक्शन
-function showCustomPopup(title, text, titleColor = "#ffffff") {
-    document.getElementById('popup-title').innerText = title;
-    document.getElementById('popup-title').style.color = titleColor;
-    document.getElementById('popup-text').innerText = text;
-    document.getElementById('popup-overlay').style.display = 'flex';
-}
-
-function closePopup() {
-    document.getElementById('popup-overlay').style.display = 'none';
-}
-
-function switchTab(mode) {
-    const loginSec = document.getElementById('login-section');
-    const regSec = document.getElementById('register-section');
-    const loginTab = document.getElementById('login-tab');
-    const regTab = document.getElementById('reg-tab');
-    
-    if (mode === 'login') {
-        loginSec.classList.remove('hidden');
-        regSec.classList.add('hidden');
-        loginTab.classList.add('active');
-        regTab.classList.remove('active');
-    } else {
-        loginSec.classList.add('hidden');
-        regSec.classList.remove('hidden');
-        loginTab.classList.remove('active');
-        regTab.classList.add('active');
-    }
-}
-
-// Register Handle Logic
-async function handleRegister() {
-    const first_name = document.getElementById('reg-first').value.trim();
-    const last_name = document.getElementById('reg-last').value.trim();
-    const gmail = document.getElementById('reg-gmail').value.trim();
-    const mobile = document.getElementById('reg-mobile').value.trim();
-    const password = document.getElementById('reg-pass').value;
-    const confirm_password = document.getElementById('reg-cpass').value;
-    const invite_code = document.getElementById('reg-invite').value.trim();
-
-    if (!first_name || !gmail || mobile.length !== 10 || !password) {
-        showCustomPopup('Required Fields', 'Please fill in all the required fields to proceed.', '#ffb703');
-        return;
-    }
-    if (password !== confirm_password) {
-        showCustomPopup('Password Mismatch', 'The password and confirm password do not match.', '#e63946');
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/api/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ first_name, last_name, gmail, mobile, password, confirm_password, invite_code })
-        });
-        const result = await response.json();
+    <!-- Main Authentication Card -->
+    <div class="auth-container">
         
-        if (response.ok || result.success) {
-            showCustomPopup('Registration Successful!', `Your Unique User ID (UID) is: ${result.uid}`, '#06d6a0');
-            switchTab('login');
-            document.getElementById('login-key').value = result.uid;
-        } else {
-            showCustomPopup('Registration Failed', result.message, '#e63946');
-        }
-    } catch (err) {
-        showCustomPopup('Server Error', 'Unable to connect to the server. Please check your internet.', '#e63946');
-        console.error(err);
-    }
-}
+        <!-- 1. LOGIN BOX -->
+        <div id="login-box">
+            <div class="brand-header">
+                <h2>Welcome Back</h2>
+                <p>Login to manage your central game wallet</p>
+            </div>
 
-// Login Handle Logic
-async function handleLogin() {
-    const login_key = document.getElementById('login-key').value.trim();
-    const password = document.getElementById('login-pass').value;
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>UID, Mobile Number or Email</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="login-identifier" placeholder="Enter UID, mobile or email" required>
+                    </div>
+                </div>
 
-    if (!login_key || !password) {
-        showCustomPopup('Empty Fields', 'Please enter both your User ID/Mobile and Password.', '#ffb703');
-        return;
-    }
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                    </div>
+                </div>
 
-    try {
-        const response = await fetch(`${API_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ login_key, password })
-        });
-        const result = await response.json();
-        
-        if (response.ok || result.success) {
-            localStorage.setItem('user_uid', result.user.uid);
-            localStorage.setItem('user_name', `${result.user.first_name} ${result.user.last_name}`);
-            localStorage.setItem('user_mobile', result.user.mobile);
-            localStorage.setItem('user_gmail', result.user.gmail);
+                <button type="submit" class="btn-primary">Log In</button>
+            </form>
+
+            <div class="switch-form-text">
+                Don't have an account? <a onclick="toggleForm('register')">Register here</a>
+            </div>
+        </div>
+
+        <!-- 2. REGISTER BOX -->
+        <div id="register-box" class="hidden">
+            <div class="brand-header">
+                <h2>Create Account</h2>
+                <p>Register once, play across all linked games</p>
+            </div>
+
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <!-- First Name & Last Name in one single horizontal line row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-id-card"></i>
+                            <input type="text" id="reg-firstname" placeholder="First name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name <span>(Optional)</span></label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-id-card"></i>
+                            <input type="text" id="reg-lastname" placeholder="Last name">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="tel" id="reg-mobile" placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address <span>(Optional)</span></label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="reg-email" placeholder="Enter email address">
+                    </div>
+                </div>
+
+                <!-- Password and Confirm Password listed strictly one below another -->
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="reg-password" placeholder="Create password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <input type="password" id="reg-confirm-password" placeholder="Repeat password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Referral Code <span>(Optional)</span></label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-gift"></i>
+                        <input type="text" id="reg-referral" placeholder="Enter referral code if any">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Register Now</button>
+            </form>
+
+            <div class="switch-form-text">
+                Already have an account? <a onclick="toggleForm('login')">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Beautiful Modern Popup Container -->
+    <div id="custom-popup" class="popup-overlay">
+        <div class="popup-box">
+            <div id="popup-icon-box" class="popup-icon"><i class="fa-solid"></i></div>
+            <div id="popup-title" class="popup-title">Notification</div>
+            <div id="popup-message" class="popup-message">Message details go here.</div>
+            <button class="popup-btn" onclick="closePopup()">OK</button>
+        </div>
+    </div>
+        <script>
+        //       URL
+        const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
+
+        // Form switcher function (Login  Register     )
+        function toggleForm(target) {
+            const loginBox = document.getElementById('login-box');
+            const registerBox = document.getElementById('register-box');
             
-            showCustomPopup('Welcome Back!', 'Login successful. Session secured.', '#06d6a0');
-            document.querySelector('.popup-btn').setAttribute('onclick', "window.location.href='dashboard.html'");
-        } else {
-            showCustomPopup('Authentication Failed', result.message, '#e63946');
+            if (target === 'register') {
+                loginBox.classList.add('hidden');
+                registerBox.classList.remove('hidden');
+            } else {
+                registerBox.classList.add('hidden');
+                loginBox.classList.remove('hidden');
+            }
         }
-    } catch (err) {
-        showCustomPopup('Connection Error', 'Failed to establish a connection with the backend server.', '#e63946');
-        console.error(err);
-    }
-}
-</script>
+
+        // Custom Beautiful Popup Function ( -   )
+        function showPopup(type, title, message, callback = null) {
+            const popup = document.getElementById('custom-popup');
+            const iconBox = document.getElementById('popup-icon-box');
+            const titleEl = document.getElementById('popup-title');
+            const msgEl = document.getElementById('popup-message');
+            
+            if(type === 'success') {
+                iconBox.className = "popup-icon success";
+                iconBox.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            } else {
+                iconBox.className = "popup-icon error";
+                iconBox.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+            }
+            
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            popup.classList.add('active');
+            
+            window.popupCallback = callback;
+        }
+
+        // -    
+        function closePopup() {
+            document.getElementById('custom-popup').classList.remove('active');
+            if (window.popupCallback) {
+                window.popupCallback();
+                window.popupCallback = null;
+            }
+        }
+
+        // ==========================================
+        //     (FETCH APIS)
+        // ==========================================
+
+        // 1.        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                //     
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showPopup('success', 'Login Successful', `Welcome back, ${data.user.firstName}! Your current balance is ${data.user.balance}. Redirecting...`, () => {
+                        //        
+                        console.log("Redirecting to Dashboard. User UID:", data.user.uid);
+                    });
+                } else {
+                    showPopup('error', 'Login Failed', data.message);
+                }
+            } catch (error) {
+                showPopup('error', 'Server Error', 'Could not connect to the server. Please try again later.');
+            }
+        }
+
+        // 2.        
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const firstName = document.getElementById('reg-firstname').value;
+            const lastName = document.getElementById('reg-lastname').value;
+            const mobile = document.getElementById('reg-mobile').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+            const referralCode = document.getElementById('reg-referral').value;
+            
+            //    
+            if (password !== confirmPassword) {
+                showPopup('error', 'Registration Failed', 'Password and Confirm Password do not match. Please try again.');
+                return;
+            }
+
+            try {
+                // ver    
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ firstName, lastName, mobile, email, password, referralCode })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showPopup('success', 'Account Created', `Congratulations! Your account is ready. Your unique Login UID is: ${data.data.uid}. Write it down safely!`, () => {
+                        toggleForm('login'); //          
+                    });
+                } else {
+                    showPopup('error', 'Registration Failed', data.message);
+                }
+            } catch (error) {
+                showPopup('error', 'Server Error', 'Could not connect to the server. Please try again later.');
+            }
+        }
+    </script>
 </body>
 </html>
