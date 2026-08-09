@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Central Wallet - Auth System</title>
 <style>
+/* 🎨 सभी कलर्स और स्टाइल्स पूरी तरह लोकल (Hardcoded) हैं */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
 body { background: #000000; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 .auth-container { width: 100%; max-width: 400px; background: #121212; padding: 24px; border-radius: 20px; border: 1px solid #1c1c1c; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
@@ -19,12 +20,20 @@ body { background: #000000; color: #ffffff; display: flex; justify-content: cent
 .row { display: flex; gap: 10px; }
 .submit-btn { width: 100%; padding: 14px; background: #9d4edd; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
 .submit-btn:hover { background: #7b2cbf; }
+
+/* 🌟 100% कस्टम लोकल पॉपअप बॉक्स की स्टाइल */
+.custom-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; }
+.custom-popup { background: #1e1e1e; border: 1px solid #333; padding: 24px; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popupShow 0.3s ease-out; }
+@keyframes popupShow { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.popup-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+.popup-text { font-size: 14px; color: #aaa; margin-bottom: 20px; line-height: 1.4; }
+.popup-btn { padding: 10px 24px; background: #9d4edd; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+.popup-btn:hover { background: #7b2cbf; }
 </style>
 </head>
 <body>
 
 <div class="auth-container">
-    <!-- Tabs For Switch -->
     <div class="tabs">
         <button id="login-tab" class="tab-btn active" onclick="switchTab('login')">LOGIN</button>
         <button id="reg-tab" class="tab-btn" onclick="switchTab('register')">REGISTER</button>
@@ -79,11 +88,31 @@ body { background: #000000; color: #ffffff; display: flex; justify-content: cent
     </div>
 </div>
 
+<!-- 🌟 कस्टम लोकल पॉपअप का HTML स्ट्रक्चर -->
+<div id="popup-overlay" class="custom-popup-overlay">
+    <div class="custom-popup">
+        <div id="popup-title" class="popup-title" style="color: #ffffff;">Notification</div>
+        <div id="popup-text" class="popup-text">Message goes here.</div>
+        <button class="popup-btn" onclick="closePopup()">OK</button>
+    </div>
+</div>
+
 <script>
-// API URL Config (Render Server Address)
+// ⚡ आपका लाइव रेंडर सर्वर लिंक
 const API_URL = "https://central-wallet-game-api.onrender.com"; 
 
-// Switch Tab Logic
+// 🛠️ कस्टम लोकल पॉपअप दिखाने का जावास्क्रिप्ट फंक्शन
+function showCustomPopup(title, text, titleColor = "#ffffff") {
+    document.getElementById('popup-title').innerText = title;
+    document.getElementById('popup-title').style.color = titleColor;
+    document.getElementById('popup-text').innerText = text;
+    document.getElementById('popup-overlay').style.display = 'flex';
+}
+
+function closePopup() {
+    document.getElementById('popup-overlay').style.display = 'none';
+}
+
 function switchTab(mode) {
     const loginSec = document.getElementById('login-section');
     const regSec = document.getElementById('register-section');
@@ -114,11 +143,11 @@ async function handleRegister() {
     const invite_code = document.getElementById('reg-invite').value.trim();
 
     if (!first_name || !gmail || mobile.length !== 10 || !password) {
-        alert("Kripya sabhi jaroori fields ko bharein!");
+        showCustomPopup('Required Fields', 'Please fill in all the required fields to proceed.', '#ffb703');
         return;
     }
     if (password !== confirm_password) {
-        alert("Password aur Confirm Password match nahi ho rhe hain!");
+        showCustomPopup('Password Mismatch', 'The password and confirm password do not match.', '#e63946');
         return;
     }
 
@@ -131,14 +160,14 @@ async function handleRegister() {
         const result = await response.json();
         
         if (response.ok || result.success) {
-            alert(`Registration Successful!\nAapka User ID (UID): ${result.uid}`);
+            showCustomPopup('Registration Successful!', `Your Unique User ID (UID) is: ${result.uid}`, '#06d6a0');
             switchTab('login');
             document.getElementById('login-key').value = result.uid;
         } else {
-            alert(`Error: ${result.message}`);
+            showCustomPopup('Registration Failed', result.message, '#e63946');
         }
     } catch (err) {
-        alert("Registration Fail! Server connect nahi ho pa rha hai.");
+        showCustomPopup('Server Error', 'Unable to connect to the server. Please check your internet.', '#e63946');
         console.error(err);
     }
 }
@@ -149,7 +178,7 @@ async function handleLogin() {
     const password = document.getElementById('login-pass').value;
 
     if (!login_key || !password) {
-        alert("Kripya ID aur Password dono bharein!");
+        showCustomPopup('Empty Fields', 'Please enter both your User ID/Mobile and Password.', '#ffb703');
         return;
     }
 
@@ -162,19 +191,17 @@ async function handleLogin() {
         const result = await response.json();
         
         if (response.ok || result.success) {
-            // User Session Store
             localStorage.setItem('user_uid', result.user.uid);
             localStorage.setItem('user_name', `${result.user.first_name} ${result.user.last_name}`);
             localStorage.setItem('user_mobile', result.user.mobile);
             localStorage.setItem('user_gmail', result.user.gmail);
             
-            alert(`Welcome back, ${result.user.first_name}!`);
-            window.location.href = "dashboard.html"; // लॉगिन के बाद डैशबोर्ड पर भेजने के लिए
+            showCustomPopup('Welcome Back!', 'Login successful. Session secured.', '#06d6a0');
         } else {
-            alert(`Error: ${result.message}`);
+            showCustomPopup('Authentication Failed', result.message, '#e63946');
         }
     } catch (err) {
-        alert("Login Error! Server se connect nahi ho pa rha hai.");
+        showCustomPopup('Connection Error', 'Failed to establish a connection with the backend server.', '#e63946');
         console.error(err);
     }
 }
