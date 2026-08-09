@@ -71,7 +71,18 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const User = mongoose.model('User', UserSchema);
+// ==========================================
+// 3.B LIVE CHAT & TRANSACTION HISTORY SCHEMA
+// ==========================================
+const MessageSchema = new mongoose.Schema({
+    senderUid: { type: String, required: true },
+    receiverUid: { type: String, required: true },
+    type: { type: String, enum: ['text', 'payment'], required: true }, // text  payment
+    content: { type: String, required: true }, //     
+    status: { type: String, default: "Successful" }
+}, { timestamps: true });
 
+const Message = mongoose.model('Message', MessageSchema);
 // ==========================================
 // 4. AUTHENTICATION APIS (REGISTRATION & LOGIN)
 // ==========================================
@@ -179,6 +190,126 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+});
+// ==========================================
+// 5. CORE WALLET & LIVE SEARCH BUSINESS APIS
+// ==========================================
+
+// API 3:      (Search Engine Route)
+app.get('/api/user/search', async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.status(400).json({ success: false, message: "Search query is required." });
+        }
+
+        //     UID    
+        const targetUser = await User.findOne({
+            $or: [
+                { mobile: query.trim() },
+                { uid: query.trim() }
+            ]
+        });
+
+        if (!targetUser) {
+            return res.status(404).json({ success: false, message: "No registered user found." });
+        }
+
+        res.status(200).json({
+            success: true,
+            user: {
+                uid: targetUser.uid,
+                firstName: targetUser.firstName,
+                lastName: targetUser.lastName,
+                mobile: targetUser.mobile,
+                upiId: `${targetUser.mobile}@central`
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API 4:      (Instant Wallet Transfer Route)
+app.post('/api/wallet/transfer', async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { senderUid, receiverUid, amount } = req.body;
+        const transferAmount = parseFloat(amount);
+
+        if (!senderUid || !receiverUid || isNaN(transferAmount) || transferAmount <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid parameters or amount." });
+        }
+
+        // 1.      
+        const sender = await User.findOne({ uid: senderUid }).session(session);
+        if (!sender || sender.balance < transferAmount) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ success: false, message: "Insufficient balance or invalid sender." });
+        }
+
+        // 2.    
+        const receiver = await User.findOne({ uid: receiverUid }).session(session);
+        if (!receiver) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(444).json({ success: false, message: "Receiver account not found." });
+        }
+
+        // 3.  :   ,   
+        sender.balance -= transferAmount;
+        receiver.balance += transferAmount;
+
+        await sender.save({ session });
+        await receiver.save({ session });
+
+        // 4.      
+        const newTransactionLog = new Message({
+            senderUid,
+            receiverUid,
+            type: 'payment',
+            content: transferAmount.toString(),
+            status: 'Successful'
+        });
+        await newTransactionLog.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({
+            success: true,
+            message: "Transaction completed and logged successfully!",
+            newBalance: sender.balance
+        });
+
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+// API 5:          (Live Sync Route)
+app.get('/api/user/:uid', async (req, res) => {
+    try {
+        const user = await User.findOne({ uid: req.params.uid });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+        res.status(200).json({
+            success: true,
+            user: {
+                uid: user.uid,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                mobile: user.mobile,
+                balance: user.balance
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
 // ==========================================
