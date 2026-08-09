@@ -477,7 +477,7 @@
                 const logTime = new Date(log.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                 
                 // सही टाइप (text या payment) के साथ स्क्रीन पर दिखाना
-                appendMessageBubbleToStream(log.content, log.type, direction, logTime);
+                appendMessageBubbleToStream(log.content, log.type, direction, logTime, log.status || 'Successful');
             });
         } else {
             streamBox.innerHTML = '<div class="chat-date-divider"><span>No past transactions found. Start a conversation!</span></div>';
