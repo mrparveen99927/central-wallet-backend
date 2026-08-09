@@ -324,9 +324,9 @@
 </head>
 <body>
 
-    <!-- 1. Top Target User Profile Header Link Section -->
+    <!-- 1. Top Target User Profile Header Section (Smart Back Button Logic) -->
     <div class="pay-header">
-        <div onclick="window.location.href='dashboard.html'">
+        <div onclick="handleSmartBackButton()">
             <svg class="back-svg" viewBox="0 0 24 24">
                 <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
             </svg>
@@ -340,41 +340,22 @@
 
     <!-- 2. Dynamic Passbook Logs / Chat Stream Content Area -->
     <div id="chat-stream-box" class="chat-container">
-        <!-- Date Marker Timeline -->
-        <div class="chat-date-divider"><span>Today</span></div>
-        
-        <!-- received transaction card (Left Side Dummy Log) -->
-        <div class="msg-bubble msg-received">
-            <div class="tx-card-content">
-                <svg viewBox="0 0 24 24" fill="#12b76a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-4h-2V7h2v4z"/></svg>
-                <span class="tx-amount">₹250</span>
-            </div>
-            <div class="tx-status-text">Received into Wallet</div>
-            <span class="msg-time">02:15 PM</span>
-        </div>
-
-        <!-- sent transaction card (Right Side Dummy Log) -->
-        <div class="msg-bubble msg-sent">
-            <div class="tx-card-content">
-                <svg viewBox="0 0 24 24" fill="#5f259f"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                <span class="tx-amount">₹100</span>
-            </div>
-            <div class="tx-status-text">Sent Successful</div>
-            <span class="msg-time">04:30 PM</span>
-        </div>
+        <!-- यहाँ अब असली लाइव डेटाबेस की हिस्ट्री जावास्क्रिप्ट के जरिए खुद-ब-खुद लोड होगी -->
     </div>
 
-    <!-- 3. Bottom Chat Console Inout Field Action Bar -->
+    <!-- 3. Bottom Chat Console / Input Controller Bar -->
     <div class="bottom-input-bar">
         <div class="input-box-wrapper">
+            <!-- इनपुट टाइप बार: नंबर लिखने पर यह 'Pay Mode' में आ जाएगा, टेक्स्ट पर 'Text Mode' -->
             <input type="text" id="console-input" placeholder="Type a message or amount (₹)" autocomplete="off">
         </div>
+        <!-- गोल एक्शन बटन जो खुद आइकन बदलेगा -->
         <button id="console-action-btn" class="action-send-btn" onclick="processConsoleAction()">
             <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 7z"/></svg>
         </button>
     </div>
 
-    <!-- 4. 🔴 पॉप-अप 1: पेमेंट कन्फर्मेशन डिटेल्स रसीद शीट 🔴 -->
+    <!-- 4. पॉप-अप 1: पेमेंट कन्फर्मेशन डिटेल्स रसीद शीट -->
     <div id="confirm-sheet-popup" class="popup-overlay">
         <div class="popup-box">
             <div class="popup-title">Confirm Money Transfer</div>
@@ -393,7 +374,7 @@
         </div>
     </div>
 
-    <!-- 5. 🔴 पॉप-अप 2: सुरक्षा पिन MPIN ऑथराइजेशन इनपुट शीट 🔴 -->
+    <!-- 5. पॉप-अप 2: सुरक्षा पिन MPIN ऑथराइजेशन इनपुट शीट -->
     <div id="mpin-sheet-popup" class="popup-overlay">
         <div class="popup-box">
             <div class="popup-title">Enter 4-Digit Wallet PIN</div>
@@ -416,21 +397,29 @@
             <button class="action-button-css" onclick="closeStatusPopup()">OK</button>
         </div>
     </div>
-        <script>
+    
+            <script>
         const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
 
         let currentTargetUser = null;
         let activePayAmount = 0;
 
-        // पेज लोड होते ही सर्च होकर आए यूजर का डेटा लाइव लोड करना
-        window.addEventListener('DOMContentLoaded', () => {
+        // पेज लोड होते ही सर्च होकर आए यूजर का डेटा और असली हिस्ट्री लाइव लोड करना
+        window.addEventListener('DOMContentLoaded', async () => {
             const targetDataString = localStorage.getItem('active_pay_target');
-            if (targetDataString) {
+            const myUserString = localStorage.getItem('user_data');
+
+            if (targetDataString && myUserString) {
                 currentTargetUser = JSON.parse(targetDataString);
+                const myUser = JSON.parse(myUserString);
                 
+                // स्क्रीन पर टारगेट यूजर का डेटा छापना
                 document.getElementById('target-name').innerText = currentTargetUser.firstName || currentTargetUser.name;
                 document.getElementById('target-avatar').innerText = (currentTargetUser.firstName || currentTargetUser.name).charAt(0);
                 document.getElementById('target-upi').innerText = currentTargetUser.upiId || `${currentTargetUser.mobile || currentTargetUser.uid}@central`;
+
+                // 🔴 असली जादू: डेटाबेस से इन दोनों यूज़र्स की असली हिस्ट्री खींचना 🔴
+                await fetchRealTimeChatHistoryFromServer(myUser.uid, currentTargetUser.uid);
             } else {
                 window.location.href = "transfer.html";
             }
@@ -441,16 +430,40 @@
                 const btnIcon = document.getElementById('console-action-btn');
                 
                 if (val.length > 0 && !isNaN(val)) {
-                    // अगर सिर्फ नंबर भरा है तो 'पेमेंट रूपी कार्ड' का ग्रीन बटन बनेगा
                     btnIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>';
                     btnIcon.style.background = "#12b76a"; 
                 } else {
-                    // अगर टेक्स्ट मैसेज है तो 'सेंड पेपर रॉकेट' का पर्पल बटन बनेगा
                     btnIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 7z"/></svg>';
                     btnIcon.style.background = "#5f259f"; 
                 }
             });
         });
+
+        // 🔴 सर्वर से असली हिस्ट्री खींचकर स्क्रीन पर छापने का मुख्य फंक्शन 🔴
+        async function fetchRealTimeChatHistoryFromServer(myUid, targetUid) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/chat/history?senderUid=${myUid}&receiverUid=${targetUid}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                const streamBox = document.getElementById('chat-stream-box');
+                streamBox.innerHTML = ""; 
+
+                if (response.ok && data.success && data.history.length > 0) {
+                    data.history.forEach(log => {
+                        const direction = log.senderUid === myUid ? 'sent' : 'received';
+                        const logTime = new Date(log.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        appendMessageBubbleToStream(log.content, log.type, direction, logTime);
+                    });
+                } else {
+                    streamBox.innerHTML = '<div class="chat-date-divider"><span>No past transactions found. Start a conversation!</span></div>';
+                }
+            } catch (error) {
+                console.error("History fetch failed:", error);
+            }
+        }
 
         // बटन क्लिक होने पर सेंड या पे का फैसला करना
         function processConsoleAction() {
@@ -459,7 +472,6 @@
 
             if (rawValue.length === 0) return;
 
-            // अगर इनपुट सिर्फ नंबर (Amount) है
             if (!isNaN(rawValue)) {
                 activePayAmount = parseFloat(rawValue);
                 if (activePayAmount <= 0) {
@@ -467,7 +479,6 @@
                     return;
                 }
                 
-                // 🔴 पॉप-अप 1: डिटेल्स शीट एक्टिवेट करना
                 document.getElementById('pop-target-name').innerText = currentTargetUser.firstName || currentTargetUser.name;
                 document.getElementById('pop-target-upi').innerText = currentTargetUser.upiId || `${currentTargetUser.mobile || currentTargetUser.uid}@central`;
                 document.getElementById('pop-confirm-amount').innerText = `₹${activePayAmount}`;
@@ -476,31 +487,22 @@
                 document.getElementById('pop-tx-datetime').innerText = now.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, day: 'numeric', month: 'short', year: 'numeric' });
                 
                 document.getElementById('confirm-sheet-popup').classList.add('active');
-            } 
-            // अगर इनपुट साधारण टेक्स्ट मैसेज है
-            else {
+            } else {
                 appendMessageBubbleToStream(rawValue, 'text', 'sent');
                 consoleInputEl.value = "";
             }
         }
 
         function closeConfirmSheet() { document.getElementById('confirm-sheet-popup').classList.remove('active'); }
-
-        // पॉप-अप 1 से आगे बढ़कर सीधे पॉप-अप 2 (MPIN Input Form) खोलना
-        function triggerMpinPopupSheet() {
-            closeConfirmSheet();
-            document.getElementById('wallet-mpin-input').value = ""; 
-            document.getElementById('mpin-sheet-popup').classList.add('active');
-        }
-
+        function triggerMpinPopupSheet() { closeConfirmSheet(); document.getElementById('wallet-mpin-input').value = ""; document.getElementById('mpin-sheet-popup').classList.add('active'); }
         function closeMpinSheetPopup() { document.getElementById('mpin-sheet-popup').classList.remove('active'); }
+        function handleSmartBackButton() { const backFlag = localStorage.getItem('back_to_transfer'); if (backFlag === 'yes') { localStorage.removeItem('back_to_transfer'); window.location.href = "transfer.html"; } else { window.location.href = "dashboard.html"; } }
                 // 🔴 असली फाइनल वॉलेट बैलेंस डिडक्ट लॉजिक 🔴
         async function executeLiveWalletTransaction(event) {
             event.preventDefault();
             const myUser = JSON.parse(localStorage.getItem('user_data'));
             const inputMpin = document.getElementById('wallet-mpin-input').value;
 
-            // 1. सुरक्षा लॉक: क्या यूजर का बनाया हुआ MPIN सही है?
             const realMpin = localStorage.getItem(`mpin_${myUser.uid}`);
 
             if (!realMpin) {
@@ -515,7 +517,6 @@
                 return;
             }
 
-            // 2. पर्याप्त कॉइन्स की जांच करना
             if (myUser.balance < activePayAmount) {
                 closeMpinSheetPopup();
                 showStatusPopup('Insufficient Balance', `You do not have enough funds. Current Wallet Balance: ₹${myUser.balance}`, 'error');
@@ -523,7 +524,6 @@
             }
 
             try {
-                // 3. 🔒 रेंडर सर्वर एपीआई को ट्रांसफर रिक्वेस्ट भेजना
                 const response = await fetch(`${API_BASE_URL}/api/wallet/transfer`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -543,21 +543,17 @@
                     showStatusPopup('Transaction Failed', data.message || 'Server rejected the settlement transfer.', 'error');
                 }
             } catch (error) {
-                // बैकअप लोकल प्रोसेसिंग (ताकि बिना रूट के भी टेस्टिंग सुचारू रहे)
                 console.log("Server API transfer route not found, running simulated live instant cut...", error);
                 finalizeLocalPaymentSuccess(myUser);
             }
         }
 
-        // भुगतान सफल होने पर वॉलेट अकाउंट अपडेट करना
         function finalizeLocalPaymentSuccess(myUser) {
             closeMpinSheetPopup();
             
-            // बैलेंस घटाना
             myUser.balance = myUser.balance - activePayAmount;
             localStorage.setItem('user_data', JSON.stringify(myUser));
 
-            // चैट बॉक्स में लाइव सेंड रसीद अटैच करना
             appendMessageBubbleToStream(activePayAmount, 'payment', 'sent');
             document.getElementById('console-input').value = "";
             
@@ -565,21 +561,23 @@
         }
 
         // चैट बॉक्स में नया संदेश या पेमेंट का गुब्बारा जोड़ना
-        function appendMessageBubbleToStream(content, type, direction) {
+        function appendMessageBubbleToStream(content, type, direction, customTime = null) {
             const streamBox = document.getElementById('chat-stream-box');
             const bubble = document.createElement('div');
             bubble.className = `msg-bubble msg-${direction}`;
 
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            const timeStr = customTime ? customTime : new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
             if (type === 'payment') {
+                const iconColor = direction === 'sent' ? '#5f259f' : '#12b76a';
+                const statusTitle = direction === 'sent' ? 'Sent Successful' : 'Received Successful';
+
                 bubble.innerHTML = `
                     <div class="tx-card-content">
-                        <svg viewBox="0 0 24 24" fill="#5f259f"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        <span class="tx-amount">₹${content}</span>
+                        <svg viewBox="0 0 24 24" fill="${iconColor}"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <span class="tx-amount" style="color: ${iconColor};">₹${content}</span>
                     </div>
-                    <div class="tx-status-text">Sent Successful</div>
+                    <div class="tx-status-text" style="color: ${iconColor};">${statusTitle}</div>
                     <span class="msg-time">${timeStr}</span>
                 `;
             } else {
@@ -587,7 +585,7 @@
             }
 
             streamBox.appendChild(bubble);
-            streamBox.scrollTop = streamBox.scrollHeight; // ऑटो स्क्रॉल नीचे ले जाना
+            streamBox.scrollTop = streamBox.scrollHeight;
         }
 
         function showStatusPopup(title, message, type) {
