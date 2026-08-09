@@ -166,6 +166,24 @@ app.get('/api/wallet/balance', async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error during balance sync" });
     }
 });
+// ==========================================
+// 🕵️ सीक्रेट टेस्टिंग रूट: डेटाबेस का असली डेटा देखने के लिए
+// ==========================================
+app.get('/api/secret-database-check-123', async (req, res) => {
+    try {
+        // डेटाबेस से सभी यूजर्स को ढूंढना
+        const allUsers = await User.find({}, { password: 0 }); // सुरक्षा के लिए पासवर्ड छुपाकर
+        
+        res.status(200).json({
+            success: true,
+            total_users_in_database: allUsers.length,
+            all_users_list: allUsers
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Database read error" });
+    }
+});
 
 // ==========================================
 // 4. मोंगोडीबी कनेक्शन और सर्वर स्टार्ट (DIRECTLY LOCKED URL)
