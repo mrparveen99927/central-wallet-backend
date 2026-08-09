@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bcrypt = require('bcryptjs'); // पासवर्ड सुरक्षा के लिए
 require('dotenv').config();
 
 const app = express();
@@ -17,41 +16,63 @@ const UserSchema = new mongoose.Schema({
     last_name: { type: String, trim: true },
     gmail: { type: String, required: true, unique: true, trim: true, lowercase: true },
     mobile: { type: String, required: true, unique: true, trim: true },
-    password: { type: String, required: true },
+    password: { type: String, required: true }, 
     nn_wallet_balance: { type: Number, default: 0 },
     nn_alpha_balance: { type: Number, default: 0 },
     bot_mining_balance: { type: Number, default: 0 },
     invite_code: { type: String, trim: true },
     createdAt: { type: Date, default: Date.now }
-}, { collection: 'users' }); // 🎯 इसी users कलेक्शन में डेटा जाएगा
+}, { collection: 'users' }); 
 
 const User = mongoose.model('User', UserSchema);
 
 // ==========================================
-// 2. AUTH ROUTES (Register & Login)
+// 2. IST TIME BOUND LOGIC (10 AM to 5 PM)
+// ==========================================
+const checkPaymentTime = (req, res, next) => {
+    const now = new Date();
+    const localTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+    const currentISTHour = localTime.getUTCHours();
+    const currentISTMinute = localTime.getUTCMinutes();
+    
+    const totalMinutes = (currentISTHour * 60) + currentISTMinute;
+    const startMinutes = 10 * 60; // 10:00 AM
+    const endMinutes = 17 * 60;   // 05:00 PM
+
+    if (req.path.includes('/deposit') || req.path.includes('/withdraw')) {
+        if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
+            return res.status(403).json({
+                success: false,
+                message: "Transactions बंद हैं! कृपया सुबह 10:00 से शाम 05:00 के बीच प्रयास करें।"
+            });
+        }
+    }
+    next();
+};
+app.use(checkPaymentTime);
+
+// ==========================================
+// 3. AUTH API ROUTES
 // ==========================================
 
-// 🔑 Register Route
+// 🔑 Registration (Sign Up)
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { first_name, last_name, gmail, mobile, password, invite_code } = req.body;
 
-        // पहले से मौजूद यूजर चेक करना
         const userExists = await User.findOne({ $or: [{ gmail }, { mobile }] });
         if (userExists) {
             return res.status(400).json({ success: false, message: "Mobile number ya Gmail pehle se registered hai!" });
         }
 
-        // यूनिक UID जनरेट करना (e.g., CW1234)
         const randomDigits = Math.floor(1000 + Math.random() * 9000);
         const uid = `CW${randomDigits}`;
 
-        // पासवर्ड हैश करना
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
         const newUser = new User({
-            uid, first_name, last_name, gmail, mobile, password: hashedPassword, invite_code
+            uid, first_name, last_name, gmail, mobile, password, invite_code,
+            nn_wallet_balance: 0,
+            nn_alpha_balance: 0,
+            bot_mining_balance: 0
         });
 
         await newUser.save();
@@ -62,7 +83,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
-// 🔓 Login Route
+// 🔓 Login (Sign In)
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { login_key, password } = req.body;
@@ -75,29 +96,27 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(400).json({ success: false, message: "User nahi mila!" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        if (user.password !== password) {
             return res.status(400).json({ success: false, message: "Galat Password!" });
         }
 
         res.status(200).json({
             success: true,
             message: "Login successful!",
-            user: { uid: user.uid, first_name: user.first_name, last_name: user.last_name, gmail: user.gmail, mobile: user.mobile }
+            user: { uid: user.uid, first_name: user.first_name, last_name: user.last_name, gmail: user.gmail, mobile: user.mobile, nn_wallet_balance: user.nn_wallet_balance }
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Server error during login." });
+        res.status(500).json({ success: false, message: "Server error!" });
     }
 });
 
-// 🪙 Fetch Balance Route
+// 🪙 FETCH WALLET BALANCES
 app.get('/api/wallet/balance', async (req, res) => {
     try {
         const { uid } = req.query;
         const user = await User.findOne({ uid });
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
         res.status(200).json({
             success: true,
             nn_balance: user.nn_wallet_balance,
@@ -109,16 +128,33 @@ app.get('/api/wallet/balance', async (req, res) => {
     }
 });
 
+// 🎯 SECRET DATABASE CHECK ROUTE (यह आपका वापस आ गया भाई!)
+app.get('/api/secret-database-check-123', async (req, res) => {
+    try {
+        const allUsers = await User.find({});
+        res.status(200).json({
+            success: true,
+            total_users_in_database: allUsers.length,
+            users: allUsers
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get('/', (req, res) => {
+    res.send("Central Wallet Server is Running Successfully!");
+});
+
 // ==========================================
-// 3. DATABASE CONNECTION (Locked to central_wallet_db)
+// 4. DATABASE CONNECTION
 // ==========================================
-// पुराना कोड हटाकर इसे डालिए:
 const DB_URL = process.env.MONGO_URI || "mongodb+srv://game_user:Nnalpha999@cluster0.garubng.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(DB_URL, {
-    dbName: 'central_wallet_db' // 🎯 यह लाइन मोंगोस को मजबूर करेगी कि वह डेटा इसी नाम के अंदर डाले!
+    dbName: 'central_wallet_db' // 🎯 जबरदस्ती इसी डेटाबेस फोल्डर में डेटा लॉक करने के लिए
 })
-.then(() => console.log("MongoDB Connected Strictly to central_wallet_db!"))
+.then(() => console.log("MongoDB Connected Successfully to central_wallet_db!"))
 .catch(err => console.error("Database Connection Error:", err));
 
 const PORT = process.env.PORT || 3000;
