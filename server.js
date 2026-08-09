@@ -137,6 +137,27 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/', (req, res) => {
     res.send("Central Wallet Server is Running Successfully without folders!");
 });
+// ==========================================
+// API ROUTE TO FETCH LIVE COIN BALANCE
+// ==========================================
+app.get('/api/wallet/balance', async (req, res) => {
+    try {
+        const { uid } = req.query;
+        const user = await User.findOne({ uid });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        res.status(200).json({
+            success: true,
+            balance: user.wallet_balance
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
 
 // ==========================================
 // 4. मोंगोडीबी कनेक्शन और सर्वर स्टार्ट

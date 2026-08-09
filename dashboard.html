@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central Wallet - Dashboard</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+body { background: #000000; color: #ffffff; padding-bottom: 70px; display: flex; justify-content: center; min-height: 100vh; }
+.dashboard-container { width: 100%; max-width: 450px; background: #000000; padding: 16px; position: relative; }
+
+/* 👤 Top Header with Profile Icon */
+.top-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 15px; }
+.profile-trigger { width: 42px; height: 42px; background: #9d4edd; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; cursor: pointer; font-size: 18px; border: 2px solid #333; }
+.app-title { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
+
+/* 📺 Advertisement Banner Box */
+.ad-banner { width: 100%; height: 80px; background: #121212; border: 1px dashed #334155; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #64748b; font-size: 13px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* 🪙 Coin Balance Section */
+.balance-section { text-align: center; margin-bottom: 25px; padding: 10px 0; }
+.balance-section p { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.balance-section h1 { font-size: 38px; color: #ffffff; font-weight: 8px; }
+.balance-section h1 span { color: #9d4edd; font-size: 22px; margin-left: 5px; }
+
+/* 🎛️ 4 Main Action Boxes (Grid Layout) */
+.grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 25px; }
+.action-box { background: #121212; border: 1px solid #1c1c1c; padding: 20px 15px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 110px; }
+.action-box:hover { border-color: #9d4edd; background: #161616; }
+.box-icon { font-size: 24px; }
+.box-title { font-size: 14px; font-weight: bold; color: #fff; letter-spacing: 0.5px; }
+
+/* 🧭 Bottom Fixed Navigation Bar */
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: #121212; border-top: 1px solid #1c1c1c; display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; }
+.nav-item { background: none; border: none; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 11px; font-weight: bold; width: 20%; text-transform: uppercase; }
+.nav-item.active { color: #9d4edd; }
+.nav-icon { font-size: 18px; }
+</style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- 👤 Top Navigation Bar -->
+    <div class="top-nav">
+        <div class="app-title">CENTRAL WALLET</div>
+        <!-- गोल प्रोफाइल बटन - इस पर क्लिक करते ही profile.html खुलेगी -->
+        <div class="profile-trigger" onclick="navigateTo('profile.html')">U</div>
+    </div>
+
+    <!-- 📺 Advertisement Banner -->
+    <div class="ad-banner">
+        Advertisement Banner Space
+    </div>
+
+    <!-- 🪙 Virtual Coin Balance Displays -->
+    <div class="balance-section">
+        <p>Available Balance</p>
+        <h1 id="coin-balance">0.00<span>COINS</span></h1>
+    </div>
+
+    <!-- 🎛️ 4 Grid Action Boxes -->
+    <div class="grid-container">
+        <!-- Box 1: Phone / UPI Pay -->
+        <div class="action-box" onclick="navigateTo('upi-pay.html')">
+            <div class="box-icon">📱</div>
+            <div class="box-title">Phone / UPI Pay</div>
+        </div>
+        
+        <!-- Box 2: Game Pay -->
+        <div class="action-box" onclick="navigateTo('game-pay.html')">
+            <div class="box-icon">🎮</div>
+            <div class="box-title">Game Pay</div>
+        </div>
+
+        <!-- Box 3: Deposit Cash -->
+        <div class="action-box" onclick="navigateTo('deposit.html')">
+            <div class="box-icon">💵</div>
+            <div class="box-title">Deposit Cash</div>
+        </div>
+
+        <!-- Box 4: Withdraw Cash -->
+        <div class="action-box" onclick="navigateTo('withdraw.html')">
+            <div class="box-icon">🏛️</div>
+            <div class="box-title">Withdraw Cash</div>
+        </div>
+    </div>
+</div>
+
+<!-- 🧭 Fixed Bottom Navigation Bar -->
+<div class="bottom-nav">
+    <button class="nav-item active" onclick="navigateTo('dashboard.html')">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+    </button>
+    <button class="nav-item" onclick="navigateTo('search.html')">
+        <span class="nav-icon">🔍</span>
+        <span>Search</span>
+    </button>
+    <button class="nav-item" onclick="navigateTo('alerts.html')">
+        <span class="nav-icon">🔔</span>
+        <span>Alerts</span>
+    </button>
+    <button class="nav-item" onclick="navigateTo('history.html')">
+        <span class="nav-icon">📜</span>
+        <span>History</span>
+    </button>
+</div>
+
+<script>
+// Live Render Server URL
+const API_URL = "https://central-wallet-game-api.onrender.com";
+
+// Load user data dynamically from database on page load
+window.onload = async function() {
+    const uid = localStorage.getItem('user_uid');
+    
+    // Security check: Redirect to login if token is missing
+    if (!uid) {
+        window.location.href = "index.html";
+        return;
+    }
+    
+    await fetchLiveUserData(uid);
+};
+
+// Fetch fresh name and coin balance from MongoDB
+async function fetchLiveUserData(uid) {
+    try {
+        const name = localStorage.getItem('user_name');
+        if (name) {
+            document.querySelector('.profile-trigger').innerText = name.charAt(0).toUpperCase();
+        }
+
+        // Fetch official coin balance from render server
+        const balanceRes = await fetch(`${API_URL}/api/wallet/balance?uid=${uid}`);
+        const balanceData = await balanceRes.json();
+        
+        if (balanceRes.ok && balanceData.success) {
+            document.getElementById('coin-balance').innerHTML = `${balanceData.balance.toFixed(2)}<span>COINS</span>`;
+        } else {
+            document.getElementById('coin-balance').innerHTML = `0.00<span>COINS</span>`;
+        }
+
+    } catch (err) {
+        console.error("Failed to sync live data from MongoDB:", err);
+        document.getElementById('coin-balance').innerHTML = `0.00<span>COINS</span>`;
+    }
+}
+
+// Global navigation router
+function navigateTo(pageName) {
+    window.location.href = pageName;
+}
+</script>
+
+</body>
+</html>
