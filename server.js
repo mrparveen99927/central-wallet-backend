@@ -168,10 +168,12 @@ app.get('/api/wallet/balance', async (req, res) => {
 });
 
 // ==========================================
-// 4. मोंगोडीबी कनेक्शन और सर्वर स्टार्ट
+// 4. मोंगोडीबी कनेक्शन और सर्वर स्टार्ट (DIRECTLY LOCKED URL)
 // ==========================================
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB Connected Successfully!"))
+const database_url = "mongodb+srv://game_user:Nnalpha999@cluster0.garubng.mongodb.net/central_wallet_db?retryWrites=true&w=majority&appName=Cluster0";
+
+mongoose.connect(database_url)
+.then(() => console.log("MongoDB Connected Directly to central_wallet_db!"))
 .catch(err => console.error("Database Connection Error:", err));
 
 const PORT = process.env.PORT || 3000;
