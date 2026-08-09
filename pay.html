@@ -579,32 +579,21 @@ async function processConsoleAction() {
             }
         }
 
-        async function finalizeLocalPaymentSuccess(myUser) {
+        function finalizeLocalPaymentSuccess(myUser) {
     closeMpinSheetPopup();
     
-    // लोकल बैलेंस अपडेट करना
+    // 1. भेजने वाले का लोकल बैलेंस अपडेट करना
     myUser.balance = myUser.balance - activePayAmount;
     localStorage.setItem('user_data', JSON.stringify(myUser));
     
-    // स्क्रीन पर तुरंत दिखाना
+    // 2. स्क्रीन पर केवल एक बार तुरंत ट्रांजेक्शन बबल दिखाना
     appendMessageBubbleToStream(activePayAmount, 'payment', 'sent');
+    
+    // 3. इनपुट बॉक्स को खाली करना
     document.getElementById('console-input').value = "";
-
-    // 🟢 यहाँ सुधार है: पैसे कटने के बाद इसे डेटाबेस (Server) में भी सेव करें
-    try {
-        await fetch(`${API_BASE_URL}/api/chat/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                senderUid: myUser.uid,
-                receiverUid: currentTargetUser.uid,
-                type: 'payment', // यह ट्रांजेक्शन लॉग है
-                content: activePayAmount.toString()
-            })
-        });
-    } catch (error) {
-        console.log("डेटाबेस में ट्रांजेक्शन सेव करने में विफल:", error);
-    }
+    
+    // 🔴 यहाँ सुधार है: हमने यहाँ से पुराना fetch/api/chat/send वाला कोड हटा दिया है, 
+    // क्योंकि आपका बैकएंड सर्वर (wallet/transfer) खुद ही डेटाबेस में एंट्री सुरक्षित सेव कर रहा है।
 
     showStatusPopup('Transfer Successful', `Successfully transferred ₹${activePayAmount} to ${currentTargetUser.firstName || currentTargetUser.name} instantly.`, 'success');
 }
