@@ -191,23 +191,28 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// ==========================================
-// 5. CORE WALLET & LIVE SEARCH BUSINESS APIS
-// ==========================================
-
-// API 3:      (Search Engine Route)
+//   server.js        (Replace)  
 app.get('/api/user/search', async (req, res) => {
     try {
-        const { query } = req.query;
+        let { query } = req.query;
         if (!query) {
             return res.status(400).json({ success: false, message: "Search query is required." });
         }
 
-        //     UID    
+        //     (Trim )
+        query = query.trim();
+
+        //   :     UPI ID   ( @central  )
+        if (query.includes('@')) {
+            //  '@'     (   )    
+            query = query.split('@')[0];
+        }
+
+        //        UID      
         const targetUser = await User.findOne({
             $or: [
-                { mobile: query.trim() },
-                { uid: query.trim() }
+                { mobile: query },
+                { uid: query }
             ]
         });
 
@@ -215,6 +220,7 @@ app.get('/api/user/search', async (req, res) => {
             return res.status(404).json({ success: false, message: "No registered user found." });
         }
 
+        //      
         res.status(200).json({
             success: true,
             user: {
@@ -229,6 +235,7 @@ app.get('/api/user/search', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
 
 // API 4:      (Instant Wallet Transfer Route)
 app.post('/api/wallet/transfer', async (req, res) => {
