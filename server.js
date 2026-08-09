@@ -343,6 +343,33 @@ app.get('/api/chat/history', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+// API 6:           (New)
+app.get('/api/wallet/history', async (req, res) => {
+    try {
+        const { uid } = req.query;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: "User Identity (uid) is required." });
+        }
+
+        //         sender   receiver ,   'payment' 
+        const walletHistory = await Message.find({
+            type: 'payment',
+            $or: [
+                { senderUid: uid },
+                { receiverUid: uid }
+            ]
+        }).sort({ createdAt: -1 }); // -1         
+
+        res.status(200).json({
+            success: true,
+            message: "Wallet passbook logs fetched successfully.",
+            history: walletHistory
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ==========================================
 // 5.C LIVE TEXT MESSAGE SEND API
 // ==========================================

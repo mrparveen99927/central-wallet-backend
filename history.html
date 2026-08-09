@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Wallet - Transaction History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f6f6f9;
+            color: #333;
+        }
+        /* Sticky Top Header */
+        .history-header {
+            background: #7c3aed;
+            color: white;
+            padding: 18px;
+            position: sticky;
+            top: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        /* Passbook List Container */
+        .history-container {
+            max-width: 600px;
+            margin: 15px auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        /* Individual List Items */
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f2;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .history-item:hover {
+            background: #f9f9fb;
+        }
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .icon-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .icon-circle.sent { background: #f3e8ff; color: #7c3aed; }
+        .icon-circle.received { background: #dcfce7; color: #15803d; }
+        .icon-circle.failed { background: #fde8e8; color: #e11d48; }
+        
+        .tx-details .tx-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #1f2937;
+        }
+        .tx-details .tx-time {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        .item-right { text-align: right; }
+        .tx-amount { font-weight: 700; font-size: 16px; }
+        .tx-amount.sent { color: #1f2937; }
+        .tx-amount.received { color: #16a34a; }
+        .tx-amount.failed { color: #dc2626; text-decoration: line-through; }
+        
+        .tx-status-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+            display: block;
+        }
+        
+        /* 📱 PhonePe Style Receipt Modal */
+        .receipt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; padding: 20px;
+        }
+        .receipt-card {
+            background: white; width: 100%; max-width: 400px;
+            border-radius: 16px; padding: 24px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .receipt-top { text-align: center; padding-bottom: 20px; border-bottom: 1px dashed #e5e7eb; }
+        .status-badge {
+            width: 54px; height: 54px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 24px; color: white; margin-bottom: 12px;
+        }
+        .status-badge.success { background: #16a34a; }
+        .status-badge.processing { background: #ca8a04; }
+        .status-badge.failed { background: #dc2626; }
+        
+        .receipt-amount-txt { font-size: 28px; font-weight: 800; color: #111827; margin-top: 5px; }
+        .receipt-info-rows { padding: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; }
+        .info-row .label { color: #6b7280; }
+        .info-row .value { color: #111827; font-weight: 600; text-align: right; max-width: 65%; word-break: break-all; }
+        
+        /* 🚨 Custom Alert Popup Design */
+        .custom-alert-card {
+            background: white; width: 100%; max-width: 350px;
+            border-radius: 14px; padding: 20px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.25s ease-out;
+        }
+        .alert-icon { font-size: 40px; margin-bottom: 10px; color: #dc2626; }
+        .alert-title { font-size: 18px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+        .alert-msg { font-size: 14px; color: #4b5563; margin-bottom: 20px; line-height: 1.4; }
+
+        /* Buttons */
+        .close-btn, .alert-btn {
+            width: 100%; padding: 13px; background: #7c3aed; color: white;
+            border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .close-btn:hover, .alert-btn:hover { background: #6d28d9; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <div class="history-header">
+        <button class="back-btn" onclick="goToDashboard()">←</button>
+        <div class="header-title">Transaction History</div>
+    </div>
+
+    <!-- Main History Passbook Container -->
+    <div class="history-container" id="history-list-box">
+        <div style="text-align:center; padding:30px; color:#666;">Loading transactions...</div>
+    </div>
+
+    <!-- 💳 PhonePe Style Detailed Receipt Modal -->
+    <div id="receipt-modal-overlay" class="receipt-overlay" style="display: none;">
+        <div class="receipt-card">
+            <div class="receipt-top">
+                <div id="badge-icon" class="status-badge success">✓</div>
+                <h3 id="receipt-status-heading" style="font-size:16px; color:#374151;">Transaction Successful</h3>
+                <h1 id="receipt-amount-display" class="receipt-amount-txt">₹0.00</h1>
+            </div>
+            
+            <div class="receipt-info-rows">
+                <div class="info-row">
+                    <span class="label">Type</span>
+                    <span class="value" id="receipt-tx-type">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Date & Time</span>
+                    <span class="value" id="receipt-date-time">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Transaction ID</span>
+                    <span class="value" id="receipt-tx-id" style="font-family:monospace;">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">UTR Number</span>
+                    <span class="value" id="receipt-utr-number" style="letter-spacing:0.5px;">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Status</span>
+                    <span class="value" id="receipt-final-status">--</span>
+                </div>
+            </div>
+            
+            <button class="close-btn" onclick="closeReceipt()">Close Receipt</button>
+        </div>
+    </div>
+
+    <!-- 🚨 Custom Beautiful Alert Modal (Replaces old browser alert) -->
+    <div id="custom-alert-overlay" class="receipt-overlay" style="display: none;">
+        <div class="custom-alert-card">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-title" id="custom-alert-title">System Alert</div>
+            <div class="alert-msg" id="custom-alert-message">Something went wrong.</div>
+            <button class="alert-btn" onclick="closeCustomAlert()">OK</button>
+        </div>
+    </div>
+        <script>
+        const API_BASE_URL = "https://central-wallet-game-api.onrender.com"; 
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchFullWalletPaymentHistory();
+        });
+
+        // 🚨 Custom Popup Alert Logic
+        function showCustomAlert(title, message) {
+            document.getElementById('custom-alert-title').innerText = title;
+            document.getElementById('custom-alert-message').innerText = message;
+            document.getElementById('custom-alert-overlay').style.display = 'flex';
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('custom-alert-overlay').style.display = 'none';
+        }
+
+        async function fetchFullWalletPaymentHistory() {
+            const myUser = JSON.parse(localStorage.getItem('user_data'));
+            if (!myUser || !myUser.uid) {
+                // पुराने अलर्ट की जगह नया सुंदर पॉपअप इस्तेमाल हो रहा है
+                showCustomAlert('Session Error', 'User session details not found. Please log in again.');
+                document.getElementById('history-list-box').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Authentication failed!</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/chat/history?senderUid=${myUser.uid}`, { method: 'GET' });
+                const data = await response.json();
+                
+                const listBox = document.getElementById('history-list-box');
+                listBox.innerHTML = "";
+
+                if (response.ok && data.success && data.history.length > 0) {
+                    // सिर्फ 'payment' वाले लेन-देन फ़िल्टर करना
+                    const actualPayments = data.history.filter(item => item.type === 'payment');
+
+                    if(actualPayments.length === 0) {
+                        listBox.innerHTML = '<div style="text-align:center; padding:30px; color:#6b7280;">No payment history found.</div>';
+                        return;
+                    }
+
+                    actualPayments.forEach(log => {
+                        const isSent = log.senderUid === myUser.uid;
+                        let itemClass = isSent ? 'sent' : 'received';
+                        let icon = isSent ? '↗' : '↙';
+                        let sign = isSent ? '-' : '+';
+                        let titleText = isSent ? "Paid Out" : "Received In";
+                        
+                        if (log.status === 'Failed') {
+                            itemClass = 'failed';
+                            icon = '✕';
+                            titleText = isSent ? "Payment Failed" : "Received Failed";
+                        } else if (log.status === 'Processing') {
+                            icon = '⏳';
+                            titleText = "Processing Log";
+                        }
+
+                        const cleanTime = new Date(log.createdAt).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true });
+
+                        const rowHtml = `
+                            <div class="history-item" onclick="openDetailedReceipt(${JSON.stringify(log).replace(/"/g, '&quot;')})">
+                                <div class="item-left">
+                                    <div class="icon-circle ${itemClass}">${icon}</div>
+                                    <div class="tx-details">
+                                        <div class="tx-title">${titleText}</div>
+                                        <div class="tx-time">${cleanTime}</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="tx-amount ${itemClass}">${log.status === 'Failed' ? '' : sign} ₹${log.content}</div>
+                                    <span class="tx-status-label" style="color: ${log.status === 'Failed' ? '#dc2626' : (log.status === 'Processing' ? '#ca8a04' : '#16a34a')}">
+                                        ${log.status || 'Successful'}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                        listBox.insertAdjacentHTML('beforeend', rowHtml);
+                    });
+                } else {
+                    listBox.innerHTML = '<div style="text-align:center; padding:30px; color:#6b7280;">No transactions recorded yet.</div>';
+                }
+            } catch (error) {
+                console.error("History fetch error:", error);
+                // पुराने अलर्ट की जगह नया सुंदर पॉपअप इस्तेमाल हो रहा है
+                showCustomAlert('Connection Drop', 'Failed to securely fetch history logs from the Central server.');
+                document.getElementById('history-list-box').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Server connection drop!</div>';
+            }
+        }
+
+        function openDetailedReceipt(log) {
+            const myUser = JSON.parse(localStorage.getItem('user_data'));
+            const isSent = log.senderUid === myUser.uid;
+            
+            const exactDate = new Date(log.createdAt).toLocaleString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+            const numericExtract = log._id.replace(/\D/g, '');
+            const generatedUTR = "4329" + (numericExtract.substring(0, 8) || "90123456");
+
+            document.getElementById('receipt-amount-display').innerText = `₹${log.content}`;
+            document.getElementById('receipt-tx-type').innerText = isSent ? "Debited (Wallet Sent)" : "Credited (Wallet Received)";
+            document.getElementById('receipt-date-time').innerText = exactDate;
+            document.getElementById('receipt-tx-id').innerText = log._id.toUpperCase();
+            document.getElementById('receipt-utr-number').innerText = generatedUTR;
+            
+            const badge = document.getElementById('badge-icon');
+            const heading = document.getElementById('receipt-status-heading');
+            const statusLabel = document.getElementById('receipt-final-status');
+
+            badge.className = "status-badge";
+            if (log.status === 'Failed') {
+                badge.classList.add('failed');
+                badge.innerText = "✕";
+                heading.innerText = "Transaction Failed";
+                statusLabel.innerText = "FAILED / DECLINED";
+                statusLabel.style.color = "#dc2626";
+            } else if (log.status === 'Processing') {
+                badge.classList.add('processing');
+                badge.innerText = "⏳";
+                heading.innerText = "Transaction Processing";
+                statusLabel.innerText = "PENDING AT BANK";
+                statusLabel.style.color = "#ca8a04";
+            } else {
+                badge.classList.add('success');
+                badge.innerText = "✓";
+                heading.innerText = "Transaction Successful";
+                statusLabel.innerText = "SUCCESSFUL";
+                statusLabel.style.color = "#16a34a";
+            }
+
+            document.getElementById('receipt-modal-overlay').style.display = 'flex';
+        }
+
+        function closeReceipt() {
+            document.getElementById('receipt-modal-overlay').style.display = 'none';
+        }
+
+        function goToDashboard() {
+            window.location.href = "dashboard.html";
+        }
+    </script>
+</body>
+</html>
