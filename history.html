@@ -232,79 +232,74 @@
         function closeCustomAlert() {
             document.getElementById('custom-alert-overlay').style.display = 'none';
         }
+async function fetchFullWalletPaymentHistory() {
+    const myUser = JSON.parse(localStorage.getItem('user_data'));
+    if (!myUser || !myUser.uid) {
+        showCustomAlert('Session Error', 'User session details not found. Please log in again.');
+        document.getElementById('history-list-box').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Authentication failed!</div>';
+        return;
+    }
 
-        async function fetchFullWalletPaymentHistory() {
-            const myUser = JSON.parse(localStorage.getItem('user_data'));
-            if (!myUser || !myUser.uid) {
-                // पुराने अलर्ट की जगह नया सुंदर पॉपअप इस्तेमाल हो रहा है
-                showCustomAlert('Session Error', 'User session details not found. Please log in again.');
-                document.getElementById('history-list-box').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Authentication failed!</div>';
-                return;
-            }
+    try {
+        // 🟢 नया स्पेशल रूट कॉल हो रहा है जो सीधे केवल पेमेंट्स ही लेकर आएगा
+        const response = await fetch(`${API_BASE_URL}/api/wallet/history?uid=${myUser.uid}`, { 
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        const listBox = document.getElementById('history-list-box');
+        listBox.innerHTML = "";
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/chat/history?senderUid=${myUser.uid}`, { method: 'GET' });
-                const data = await response.json();
+        if (response.ok && data.success && data.history && data.history.length > 0) {
+            
+            // अब रास्ते में फिल्टर करने की कोई टेंशन नहीं, सीधा लूप चलाएं
+            data.history.forEach(log => {
+                const isSent = log.senderUid === myUser.uid;
+                let itemClass = isSent ? 'sent' : 'received';
+                let icon = isSent ? '↗' : '↙';
+                let sign = isSent ? '-' : '+';
+                let titleText = isSent ? "Paid Out" : "Received In";
                 
-                const listBox = document.getElementById('history-list-box');
-                listBox.innerHTML = "";
-
-                if (response.ok && data.success && data.history.length > 0) {
-                    // सिर्फ 'payment' वाले लेन-देन फ़िल्टर करना
-                    const actualPayments = data.history.filter(item => item.type === 'payment');
-
-                    if(actualPayments.length === 0) {
-                        listBox.innerHTML = '<div style="text-align:center; padding:30px; color:#6b7280;">No payment history found.</div>';
-                        return;
-                    }
-
-                    actualPayments.forEach(log => {
-                        const isSent = log.senderUid === myUser.uid;
-                        let itemClass = isSent ? 'sent' : 'received';
-                        let icon = isSent ? '↗' : '↙';
-                        let sign = isSent ? '-' : '+';
-                        let titleText = isSent ? "Paid Out" : "Received In";
-                        
-                        if (log.status === 'Failed') {
-                            itemClass = 'failed';
-                            icon = '✕';
-                            titleText = isSent ? "Payment Failed" : "Received Failed";
-                        } else if (log.status === 'Processing') {
-                            icon = '⏳';
-                            titleText = "Processing Log";
-                        }
-
-                        const cleanTime = new Date(log.createdAt).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true });
-
-                        const rowHtml = `
-                            <div class="history-item" onclick="openDetailedReceipt(${JSON.stringify(log).replace(/"/g, '&quot;')})">
-                                <div class="item-left">
-                                    <div class="icon-circle ${itemClass}">${icon}</div>
-                                    <div class="tx-details">
-                                        <div class="tx-title">${titleText}</div>
-                                        <div class="tx-time">${cleanTime}</div>
-                                    </div>
-                                </div>
-                                <div class="item-right">
-                                    <div class="tx-amount ${itemClass}">${log.status === 'Failed' ? '' : sign} ₹${log.content}</div>
-                                    <span class="tx-status-label" style="color: ${log.status === 'Failed' ? '#dc2626' : (log.status === 'Processing' ? '#ca8a04' : '#16a34a')}">
-                                        ${log.status || 'Successful'}
-                                    </span>
-                                </div>
-                            </div>
-                        `;
-                        listBox.insertAdjacentHTML('beforeend', rowHtml);
-                    });
-                } else {
-                    listBox.innerHTML = '<div style="text-align:center; padding:30px; color:#6b7280;">No transactions recorded yet.</div>';
+                if (log.status === 'Failed') {
+                    itemClass = 'failed';
+                    icon = '✕';
+                    titleText = isSent ? "Payment Failed" : "Received Failed";
+                } else if (log.status === 'Processing') {
+                    icon = '⏳';
+                    titleText = "Processing Log";
                 }
-            } catch (error) {
-                console.error("History fetch error:", error);
-                // पुराने अलर्ट की जगह नया सुंदर पॉपअप इस्तेमाल हो रहा है
-                showCustomAlert('Connection Drop', 'Failed to securely fetch history logs from the Central server.');
-                document.getElementById('history-list-box').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Server connection drop!</div>';
-            }
+
+                const cleanTime = new Date(log.createdAt).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true });
+
+                const rowHtml = `
+                    <div class="history-item" onclick="openDetailedReceipt(${JSON.stringify(log).replace(/"/g, '&quot;')})">
+                        <div class="item-left">
+                            <div class="icon-circle ${itemClass}">${icon}</div>
+                            <div class="tx-details">
+                                        <div class="tx-title">${titleText}</div>
+                                <div class="tx-time">${cleanTime}</div>
+                            </div>
+                        </div>
+                        <div class="item-right">
+                            <div class="tx-amount ${itemClass}">${log.status === 'Failed' ? '' : sign} ₹${log.content}</div>
+                            <span class="tx-status-label" style="color: ${log.status === 'Failed' ? '#dc2626' : (log.status === 'Processing' ? '#ca8a04' : '#16a34a')}">
+                                ${log.status || 'Successful'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                listBox.insertAdjacentHTML('beforeend', rowHtml);
+            });
+        } else {
+            listBox.innerHTML = '<div style="text-align:center; padding:30px; color:#6b7280;">No transactions recorded yet.</div>';
         }
+    } catch (error) {
+        console.error("History fetch error:", error);
+        showCustomAlert('Connection Drop', 'Failed to securely fetch history logs from the Central server.');
+        document.getElementById('history-list-box').innerHTML = '<div style="text-align:center; padding:20px; color:red;">Server connection drop!</div>';
+    }
+}
 
         function openDetailedReceipt(log) {
             const myUser = JSON.parse(localStorage.getItem('user_data'));
