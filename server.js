@@ -112,10 +112,13 @@ app.get('/api/wallet/balance', async (req, res) => {
 // ==========================================
 // 3. DATABASE CONNECTION (Locked to central_wallet_db)
 // ==========================================
-const DB_URL = process.env.MONGO_URI || "mongodb+srv://game_user:Nnalpha999@cluster0.garubng.mongodb.net/central_wallet_db?retryWrites=true&w=majority&appName=Cluster0";
+// पुराना कोड हटाकर इसे डालिए:
+const DB_URL = process.env.MONGO_URI || "mongodb+srv://game_user:Nnalpha999@cluster0.garubng.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-mongoose.connect(DB_URL)
-.then(() => console.log("MongoDB Connected Successfully to central_wallet_db!"))
+mongoose.connect(DB_URL, {
+    dbName: 'central_wallet_db' // 🎯 यह लाइन मोंगोस को मजबूर करेगी कि वह डेटा इसी नाम के अंदर डाले!
+})
+.then(() => console.log("MongoDB Connected Strictly to central_wallet_db!"))
 .catch(err => console.error("Database Connection Error:", err));
 
 const PORT = process.env.PORT || 3000;
