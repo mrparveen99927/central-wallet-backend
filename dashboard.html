@@ -35,7 +35,6 @@
             gap: 12px;
             cursor: pointer;
         }
-        /* नाम का पहला अक्षर दिखाने वाला प्रीमियम गोल डिज़ाइन */
         .profile-letter-box {
             width: 46px;
             height: 46px;
@@ -98,7 +97,7 @@
             cursor: pointer;
         }
 
-        /* 3. FOUR PREMIUM ACTION BOXES (GRID SYSTEM) */
+        /* 3. FOUR PREMIUM ACTION BOXES */
         .section-title {
             font-size: 15px;
             font-weight: 700;
@@ -132,7 +131,6 @@
             transform: scale(0.96);
             background: #fbf9fe;
         }
-        /* आइकन्स के लिए सुंदर प्रीमियम बैकग्राउंड सर्कल */
         .icon-circle-bg {
             width: 52px;
             height: 52px;
@@ -149,7 +147,6 @@
             color: #333333;
         }
         
-        /* Incoming Soon Badge Custom Style */
         .coming-soon-badge {
             position: absolute;
             top: 8px;
@@ -221,7 +218,7 @@
             fill: #5f259f;
         }
 
-        /* 5. PREMIUM CUSTOM POPUP STYLE */
+        /* 5. POPUP STYLE */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -294,7 +291,6 @@
     <!-- Upper Header & Live Profile Section -->
     <div class="header-bar">
         <div class="profile-section" onclick="goToPage('profile.html')">
-            <!-- User's first letter will automatically show here via JS -->
             <div id="user-letter" class="profile-letter-box">?</div>
             <div class="user-welcome">
                 <h3 id="user-name">Loading...</h3>
@@ -321,7 +317,6 @@
         <!-- Four Main Wallet Option Boxes -->
         <div class="section-title">Wallet Options</div>
         <div class="grid-container">
-            <!-- Box 1: To Mobile/UPI -->
             <div class="action-box" onclick="goToPage('transfer.html')">
                 <div class="icon-circle-bg">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="#5f259f">
@@ -331,7 +326,6 @@
                 <span>To Mobile/UPI</span>
             </div>
 
-            <!-- Box 2: Game Pay -->
             <div class="action-box" onclick="goToPage('game-pay.html')">
                 <div class="icon-circle-bg">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="#5f259f">
@@ -341,7 +335,6 @@
                 <span>Game Pay</span>
             </div>
 
-            <!-- Box 3: Exchange Coin -->
             <div class="action-box" onclick="goToPage('exchange.html')">
                 <div class="icon-circle-bg">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="#5f259f">
@@ -351,7 +344,6 @@
                 <span>Exchange Coin</span>
             </div>
 
-            <!-- Box 4: Incoming Soon -->
             <div class="action-box disabled-box" onclick="showPopup('info', 'Coming Soon', 'This exciting feature is currently under development and will be live in your central wallet very soon!')">
                 <span class="coming-soon-badge">Soon</span>
                 <div class="icon-circle-bg">
@@ -388,7 +380,7 @@
         </div>
     </div>
 
-    <!-- Premium Custom Popup Container -->
+    <!-- Custom Popup Container -->
     <div id="custom-popup" class="popup-overlay">
         <div class="popup-box">
             <div id="popup-icon-box" class="popup-icon-container"></div>
@@ -398,9 +390,9 @@
         </div>
     </div>
         <script>
-        const API_BASE_URL = "https://onrender.com";
+        const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
 
-        // Live Data Loading Logic from Server / LocalStorage
+        // 🔴 सुधरा हुआ लाइव डेटा लोडिंग लॉजिक 🔴
         window.addEventListener('DOMContentLoaded', async () => {
             const userDataString = localStorage.getItem('user_data');
             
@@ -409,32 +401,40 @@
                     const localUser = JSON.parse(userDataString);
                     const userUid = localUser.uid;
 
-                    // 1. Show local storage data instantly
+                    // 1. सबसे पहले लोकल स्टोरेज का असली डेटा तुरंत स्क्रीन पर दिखाना
+                    // इससे 'Gamer' और 'G' दिखने की समस्या हमेशा के लिए खत्म हो जाएगी
                     if (localUser.firstName) {
                         document.getElementById('user-name').innerText = localUser.firstName;
                         document.getElementById('user-letter').innerText = localUser.firstName.charAt(0);
+                    } else if (localUser.name) { // बैकएंड के कुछ वर्जन्स में 'name' भी हो सकता है
+                        document.getElementById('user-name').innerText = localUser.name;
+                        document.getElementById('user-letter').innerText = localUser.name.charAt(0);
                     }
+                    
                     if (localUser.uid) document.getElementById('user-uid').innerText = localUser.uid;
                     if (localUser.balance !== undefined) document.getElementById('user-balance').innerText = `₹${localUser.balance}`;
 
-                    // 2. Fetch fresh live balance from backend server
-                    const response = await fetch(`${API_BASE_URL}/api/user/${userUid}`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    
-                    if (response.ok) {
-                        const freshData = await response.json();
-                        if (freshData.success && freshData.user) {
-                            document.getElementById('user-balance').innerText = `₹${freshData.user.balance}`;
-                            document.getElementById('user-name').innerText = freshData.user.firstName;
-                            document.getElementById('user-letter').innerText = freshData.user.firstName.charAt(0);
-                            
-                            localStorage.setItem('user_data', JSON.stringify(freshData.user));
+                    // 2. इसके बाद ही बैकएंड सर्वर से बैलेंस अपडेट करने की कोशिश करना
+                    if (userUid && userUid !== "000000") {
+                        const response = await fetch(`${API_BASE_URL}/api/user/${userUid}`, {
+                            method: 'GET',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                            const freshData = await response.json();
+                            if (freshData.success && freshData.user) {
+                                document.getElementById('user-balance').innerText = `₹${freshData.user.balance}`;
+                                if (freshData.user.firstName) {
+                                    document.getElementById('user-name').innerText = freshData.user.firstName;
+                                    document.getElementById('user-letter').innerText = freshData.user.firstName.charAt(0);
+                                }
+                                localStorage.setItem('user_data', JSON.stringify(freshData.user));
+                            }
                         }
                     }
                 } catch (e) {
-                    console.log("Direct server fetch failed, showing local data instead.", e);
+                    console.log("Server sync delayed. Local live data kept safe on screen.", e);
                 }
             } else {
                 fallbackToDefault();
@@ -458,12 +458,10 @@
             element.classList.add('active');
         }
 
-        // Beautiful English Popups for Bottom Nav Items
         function handleBottomNavClick(menuName) {
             showPopup('info', menuName, `The ${menuName} section is coming soon. We are currently working on this feature!`);
         }
 
-        // Custom Beautiful Popup Trigger Function
         function showPopup(type, title, message) {
             const popup = document.getElementById('custom-popup');
             const iconBox = document.getElementById('popup-icon-box');

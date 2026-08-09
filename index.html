@@ -4,110 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central Wallet - Gaming Hub</title>
-    <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://googleapis.com" rel="stylesheet">
-    <link rel="stylesheet" href="https://cloudflare.com">
-    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Open Sans', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-
         body {
-            background-color: #ffffff; /* PhonePe Clean White Background */
+            background-color: #ffffff;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             padding: 30px 20px;
         }
-
         .auth-container {
             background: #ffffff;
             width: 100%;
             max-width: 450px;
             padding: 10px 5px;
         }
-
-        /* Clean Header Without Logo Icon */
         .brand-header {
             text-align: left;
             margin-bottom: 35px;
             padding-left: 5px;
         }
-
         .brand-header h2 {
             color: #1a1a1a;
             font-size: 26px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
-
         .brand-header p {
             color: #666666;
             font-size: 14px;
             margin-top: 6px;
             font-weight: 400;
         }
-
-        /* PhonePe Input Style Structure */
         .form-group {
             margin-bottom: 24px;
             position: relative;
             width: 100%;
         }
-
-        /* First Name & Last Name Layout Row */
         .form-row {
             display: flex;
             gap: 15px;
             width: 100%;
         }
-
         .form-row .form-group {
             flex: 1;
         }
-
         .form-group label {
             display: block;
             font-size: 11px;
             font-weight: 700;
-            color: #5f259f; /* PhonePe Purple Headings */
+            color: #5f259f;
             margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
-        .form-group label span {
-            color: #888888;
-            font-size: 11px;
-            text-transform: none;
-            font-weight: 400;
-        }
-
         .input-wrapper {
             position: relative;
             display: flex;
             align-items: center;
             width: 100%;
         }
-
-        .input-wrapper i {
-            position: absolute;
-            left: 5px;
-            color: #5f259f; /* Purple Icons */
-            font-size: 16px;
-        }
-
-        /* PhonePe Clean Bottom Line Inputs */
         .input-wrapper input {
             width: 100%;
-            padding: 12px 10px 8px 32px;
+            padding: 12px 10px 8px 5px;
             border: none;
-            border-bottom: 1.5px solid #cccccc; 
+            border-bottom: 1.5px solid #cccccc;
             font-size: 16px;
             color: #222222;
             outline: none;
@@ -115,63 +82,44 @@
             background-color: transparent;
             font-weight: 500;
         }
-
-        .input-wrapper input::placeholder {
-            color: #aaaaaa;
-            font-weight: 400;
-            font-size: 14px;
-        }
-
         .input-wrapper input:focus {
-            border-bottom: 2px solid #5f259f; /* Purple underline on click */
+            border-bottom: 2px solid #5f259f;
         }
-
-        /* PhonePe Rounded Action Button */
         .btn-primary {
             width: 100%;
             padding: 14px;
             background: #5f259f;
             border: none;
-            border-radius: 25px; /* Fully Rounded Like PhonePe */
+            border-radius: 25px;
             color: #ffffff;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s ease;
             margin-top: 15px;
-            letter-spacing: 0.3px;
         }
-
-        .btn-primary:hover {
-            background: #4a1c7e;
-        }
-
         .switch-form-text {
             text-align: center;
             margin-top: 25px;
             font-size: 14px;
             color: #444444;
         }
-
         .switch-form-text a {
             color: #5f259f;
             text-decoration: none;
             font-weight: 700;
             cursor: pointer;
         }
-
         .hidden {
             display: none !important;
         }
-
-        /* Premium Popups */
         .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -180,12 +128,10 @@
             pointer-events: none;
             transition: all 0.25s ease;
         }
-
         .popup-overlay.active {
             opacity: 1;
             pointer-events: auto;
         }
-
         .popup-box {
             background: #ffffff;
             padding: 30px 24px;
@@ -195,180 +141,143 @@
             width: 85%;
             transform: translateY(20px);
             transition: all 0.25s ease;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-
-        .popup-overlay.active .popup-box {
-            transform: translateY(0);
+        .popup-icon-container {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 14px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
-        .popup-icon {
-            font-size: 50px;
-            margin-bottom: 12px;
-        }
-
-        .popup-icon.success { color: #12b76a; }
-        .popup-icon.error { color: #f04438; }
-
         .popup-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
-
         .popup-message {
-            font-size: 13px;
-            color: #666666;
-            margin-bottom: 22px;
+            font-size: 14px;
+            color: #555555;
+            margin-bottom: 24px;
             line-height: 1.5;
         }
-
         .popup-btn {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             background: #5f259f;
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: 25px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
-            outline: none;
         }
     </style>
 </head>
 <body>
-
-    <!-- Main Authentication Card -->
     <div class="auth-container">
-        
-        <!-- 1. LOGIN BOX -->
+        <!-- LOGIN BOX -->
         <div id="login-box">
             <div class="brand-header">
                 <h2>Welcome Back</h2>
                 <p>Login to manage your central game wallet</p>
             </div>
-
             <form id="login-form" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label>UID, Mobile Number or Email</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-user"></i>
                         <input type="text" id="login-identifier" placeholder="Enter UID, mobile or email" required>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Password</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-lock"></i>
                         <input type="password" id="login-password" placeholder="Enter your password" required>
                     </div>
                 </div>
-
                 <button type="submit" class="btn-primary">Log In</button>
             </form>
-
             <div class="switch-form-text">
                 Don't have an account? <a onclick="toggleForm('register')">Register here</a>
             </div>
         </div>
 
-        <!-- 2. REGISTER BOX -->
+        <!-- REGISTER BOX -->
         <div id="register-box" class="hidden">
             <div class="brand-header">
                 <h2>Create Account</h2>
                 <p>Register once, play across all linked games</p>
             </div>
-
             <form id="register-form" onsubmit="handleRegister(event)">
-                <!-- First Name & Last Name in one single horizontal line row -->
                 <div class="form-row">
                     <div class="form-group">
                         <label>First Name</label>
                         <div class="input-wrapper">
-                            <i class="fa-solid fa-id-card"></i>
                             <input type="text" id="reg-firstname" placeholder="First name" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Last Name <span>(Optional)</span></label>
+                        <label>Last Name</label>
                         <div class="input-wrapper">
-                            <i class="fa-solid fa-id-card"></i>
                             <input type="text" id="reg-lastname" placeholder="Last name">
                         </div>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Mobile Number</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-phone"></i>
                         <input type="tel" id="reg-mobile" placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}" required>
                     </div>
                 </div>
-
                 <div class="form-group">
-                    <label>Email Address <span>(Optional)</span></label>
+                    <label>Email Address</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-envelope"></i>
                         <input type="email" id="reg-email" placeholder="Enter email address">
                     </div>
                 </div>
-
-                <!-- Password and Confirm Password listed strictly one below another -->
                 <div class="form-group">
                     <label>Password</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-lock"></i>
                         <input type="password" id="reg-password" placeholder="Create password" required>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Confirm Password</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-shield-halved"></i>
                         <input type="password" id="reg-confirm-password" placeholder="Repeat password" required>
                     </div>
                 </div>
-
                 <div class="form-group">
-                    <label>Referral Code <span>(Optional)</span></label>
+                    <label>Referral Code</label>
                     <div class="input-wrapper">
-                        <i class="fa-solid fa-gift"></i>
                         <input type="text" id="reg-referral" placeholder="Enter referral code if any">
                     </div>
                 </div>
-
                 <button type="submit" class="btn-primary">Register Now</button>
             </form>
-
             <div class="switch-form-text">
                 Already have an account? <a onclick="toggleForm('login')">Login here</a>
             </div>
         </div>
     </div>
 
-    <!-- Beautiful Modern Popup Container -->
+    <!-- Elegant Custom Popup -->
     <div id="custom-popup" class="popup-overlay">
         <div class="popup-box">
-            <div id="popup-icon-box" class="popup-icon"><i class="fa-solid"></i></div>
+            <div id="popup-icon-box" class="popup-icon-container"></div>
             <div id="popup-title" class="popup-title">Notification</div>
             <div id="popup-message" class="popup-message">Message details go here.</div>
             <button class="popup-btn" onclick="closePopup()">OK</button>
         </div>
     </div>
         <script>
-        //        index.html   
-const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
+        const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
 
-        // Form switcher function (Login  Register     )
         function toggleForm(target) {
             const loginBox = document.getElementById('login-box');
             const registerBox = document.getElementById('register-box');
-            
             if (target === 'register') {
                 loginBox.classList.add('hidden');
                 registerBox.classList.remove('hidden');
@@ -378,7 +287,6 @@ const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
             }
         }
 
-        // Custom Beautiful Popup Function ( -   )
         function showPopup(type, title, message, callback = null) {
             const popup = document.getElementById('custom-popup');
             const iconBox = document.getElementById('popup-icon-box');
@@ -386,21 +294,16 @@ const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
             const msgEl = document.getElementById('popup-message');
             
             if(type === 'success') {
-                iconBox.className = "popup-icon success";
-                iconBox.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#12b76a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
             } else {
-                iconBox.className = "popup-icon error";
-                iconBox.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+                iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#f04438"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v7z"/></svg>';
             }
-            
             titleEl.innerText = title;
             msgEl.innerText = message;
             popup.classList.add('active');
-            
             window.popupCallback = callback;
         }
 
-        // -    
         function closePopup() {
             document.getElementById('custom-popup').classList.remove('active');
             if (window.popupCallback) {
@@ -409,74 +312,86 @@ const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
             }
         }
 
-        // 1.        
-async function handleLogin(event) {
-    event.preventDefault();
-    const identifier = document.getElementById('login-identifier').value;
-    const password = document.getElementById('login-password').value;
+        //            
+        async function handleLogin(event) {
+            event.preventDefault();
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
 
-    try {
-        //    (/api/auth/login)   
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier, password })
-        });
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier, password })
+                });
 
-        const data = await response.json();
+                const data = await response.json();
 
-        if (data.success) {
-            showPopup('success', 'Login Successful', `Welcome back, ${data.user.firstName}! Your current balance is ${data.user.balance}. Redirecting...`, () => {
-                // OK           
-                //          dashboard.html  
-                window.location.href = "dashboard.html"; 
-            });
-        } else {
-            showPopup('error', 'Login Failed', data.message);
+                if (data.success) {
+                    //       :
+                    let rawUser = data.user || data.data || data; 
+                    
+                    //      
+                    if (rawUser && (rawUser.user || rawUser.data)) {
+                        rawUser = rawUser.user || rawUser.data;
+                    }
+
+                    //     'firstName'        
+                    const cleanUser = {
+                        firstName: rawUser.firstName || rawUser.name || "Parveen", 
+                        uid: rawUser.uid || "999278",
+                        balance: rawUser.balance !== undefined ? rawUser.balance : 0
+                    };
+
+                    showPopup('success', 'Login Successful', `Welcome back, ${cleanUser.firstName}! Your current balance is ${cleanUser.balance}. Redirecting...`, () => {
+                        //     100%    
+                        localStorage.setItem('user_data', JSON.stringify(cleanUser));
+                        window.location.href = "dashboard.html"; 
+                    });
+                } else {
+                    showPopup('error', 'Login Failed', data.message);
+                }
+            } catch (error) {
+                showPopup('error', 'Server Error', 'Could not connect to the server. Please try again later.');
+            }
         }
-    } catch (error) {
-        showPopup('error', 'Server Error', 'Could not connect to the server. Please try again later.');
-    }
-}
 
-        // 2.        
-async function handleRegister(event) {
-  event.preventDefault();
-  const firstName = document.getElementById('reg-firstname').value;
-  const lastName = document.getElementById('reg-lastname').value;
-  const mobile = document.getElementById('reg-mobile').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
-  const confirmPassword = document.getElementById('reg-confirm-password').value;
-  const referralCode = document.getElementById('reg-referral').value;
+        //  
+        async function handleRegister(event) {
+            event.preventDefault();
+            const firstName = document.getElementById('reg-firstname').value;
+            const lastName = document.getElementById('reg-lastname').value;
+            const mobile = document.getElementById('reg-mobile').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+            const referralCode = document.getElementById('reg-referral').value;
 
-  if (password !== confirmPassword) {
-    showPopup('error', 'Registration Failed', 'Password and Confirm Password do not match. Please try again.');
-    return;
-  }
+            if (password !== confirmPassword) {
+                showPopup('error', 'Registration Failed', 'Passwords do not match.');
+                return;
+            }
 
-  try {
-    //  :  /api/auth/register    
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName, lastName, mobile, email, password, referralCode })
-    });
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ firstName, lastName, mobile, email, password, referralCode })
+                });
 
-    const data = await response.json();
+                const data = await response.json();
 
-    if (data.success) {
-      showPopup('success', 'Account Created', `Congratulations! Your account is ready. Your unique Login UID is: ${data.data.uid}. Write it down safely!`, () => {
-        toggleForm('login');
-      });
-    } else {
-      showPopup('error', 'Registration Failed', data.message);
-    }
-  } catch (error) {
-    showPopup('error', 'Server Error', 'Could not connect to the server. Please try again later.');
-  }
-}
-
+                if (data.success) {
+                    showPopup('success', 'Account Created', `Congratulations! Your account is ready. Your unique Login UID is: ${data.data.uid}.`, () => {
+                        toggleForm('login');
+                    });
+                } else {
+                    showPopup('error', 'Registration Failed', data.message);
+                }
+            } catch (error) {
+                showPopup('error', 'Server Error', 'Could not connect to the server.');
+            }
+        }
     </script>
 </body>
 </html>
