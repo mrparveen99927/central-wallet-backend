@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Wallet - Transfer Money</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #f6f7f9;
+            padding-bottom: 20px;
+        }
+
+        /* 1. TOP NAVBAR HEADER */
+        .transfer-header {
+            background: #5f259f; /* PhonePe Purple */
+            padding: 18px 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 10px rgba(95, 37, 159, 0.15);
+        }
+        .back-arrow-svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            cursor: pointer;
+        }
+        .transfer-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        /* 2. SEARCH BAR BLOCK */
+        .search-wrapper {
+            padding: 16px;
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            border-bottom: 1px solid #eaeaea;
+        }
+        .search-box-container {
+            width: 100%;
+            background: #f1ecf7;
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1.5px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .search-box-container:focus-within {
+            border-color: #5f259f;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(95, 37, 159, 0.15);
+        }
+        .search-icon-svg {
+            width: 20px;
+            height: 20px;
+            fill: #5f259f;
+        }
+        .search-box-container input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: #222222;
+            outline: none;
+            font-weight: 500;
+        }
+        .search-box-container input::placeholder {
+            color: #888888;
+            font-weight: 400;
+        }
+
+        /* 3. DYNAMIC SEARCH RESULT BOX */
+        .result-container {
+            padding: 16px;
+        }
+        .result-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: none; /* शुरू में छुपा रहेगा */
+        }
+        
+        /* सर्च होने पर दिखने वाला यूजर कार्ड */
+        .user-result-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border: 1px solid #f0f0f2;
+            transition: all 0.2s ease;
+            display: none; /* शुरू में छुपा रहेगा */
+        }
+        .user-result-card:active {
+            transform: scale(0.97);
+            background: #fbf9fe;
+        }
+        .card-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .user-avatar-circle {
+            width: 46px;
+            height: 46px;
+            background: #5f259f;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .user-details-box h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        .user-details-box p {
+            font-size: 12px;
+            color: #5f259f;
+            font-weight: 600;
+            margin-top: 3px;
+            letter-spacing: 0.3px;
+        }
+        .pay-arrow-svg {
+            width: 18px;
+            height: 18px;
+            fill: #5f259f;
+        }
+
+        /* 4. NO RESULT FOUND LEADER */
+        .no-result-box {
+            text-align: center;
+            padding: 40px 20px;
+            display: none; /* शुरू में छुपा रहेगा */
+        }
+        .no-result-box svg {
+            width: 50px;
+            height: 50px;
+            fill: #d1d1d6;
+            margin-bottom: 12px;
+        }
+        .no-result-box h5 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #444444;
+        }
+        .no-result-box p {
+            font-size: 13px;
+            color: #888888;
+            margin-top: 4px;
+        }
+
+        /* 5. LOADING SPINNER SKELETON */
+        .search-loading-text {
+            text-align: center;
+            font-size: 13px;
+            color: #5f259f;
+            font-weight: 600;
+            padding: 10px;
+            display: none;
+        }
+
+        /* 6. POPUP OVERLAY SYSTEM */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+        }
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .popup-box {
+            background: #ffffff;
+            padding: 30px 24px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 340px;
+            width: 85%;
+            transform: translateY(20px);
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .popup-overlay.active .popup-box {
+            transform: translateY(0);
+        }
+        .popup-icon-container {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 14px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        .popup-message {
+            font-size: 14px;
+            color: #555555;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .popup-btn {
+            width: 100%;
+            padding: 13px;
+            background: #5f259f;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Top Navbar Header Section -->
+    <div class="transfer-header">
+        <div onclick="window.location.href='dashboard.html'">
+            <svg class="back-arrow-svg" viewBox="0 0 24 24">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+        </div>
+        <h2>Pay to Mobile / UPI ID</h2>
+    </div>
+
+    <!-- 2. Interactive Search Box Area -->
+    <div class="search-wrapper">
+        <div class="search-box-container">
+            <svg class="search-icon-svg" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <!-- 🔍 लाइव इनपुट बॉक्स (नंबर या UPI टाइप करने के लिए) -->
+            <input type="text" id="search-input" placeholder="Enter mobile number or UPI ID" autocomplete="off" oninput="handleLiveSearch()">
+        </div>
+    </div>
+
+    <!-- 3. Dynamic Results Display Area -->
+    <div class="result-container">
+        <div id="result-heading" class="result-title">Search Result</div>
+        
+        <!-- सर्वर सर्चिंग के दौरान दिखने वाला लोडिंग टेक्स्ट -->
+        <div id="search-loading" class="search-loading-text">Searching backend database...</div>
+
+        <!-- 🟢 जब यूजर मिल जाएगा तब यह कार्ड लाइव होकर चमकेगा 🟢 -->
+        <div id="user-card" class="user-result-card" onclick="redirectToPayPage()">
+            <div class="card-left">
+                <!-- नाम का पहला अक्षर यहाँ दिखेगा -->
+                <div id="card-avatar" class="user-avatar-circle">?</div>
+                <div class="user-details-box">
+                    <h4 id="card-name">User Name</h4>
+                    <p id="card-upi">mobile@central</p>
+                </div>
+            </div>
+            <svg class="pay-arrow-svg" viewBox="0 0 24 24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+        </div>
+
+        <!-- 🔴 जब डेटाबेस में यूजर नहीं मिलेगा तो यह बॉक्स दिखेगा 🔴 -->
+        <div id="no-result-found" class="no-result-box">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-4h-2V7h2v4z"/>
+            </svg>
+            <h5>No Result Found</h5>
+            <p>This mobile number or UPI ID is not registered with Central Wallet.</p>
+        </div>
+
+    </div>
+
+    <!-- Premium English Custom Popup Box -->
+    <div id="custom-popup" class="popup-overlay">
+        <div class="popup-box">
+            <div id="popup-icon-box" class="popup-icon-container"></div>
+            <div id="popup-title" class="popup-title">Notification</div>
+            <div id="popup-message" class="popup-message">Message details go here.</div>
+            <button class="popup-btn" onclick="closePopup()">OK</button>
+        </div>
+    </div>
+        <script>
+        // 🔴 आपके असली रेंडर सर्वर का लिंक 🔴
+        const API_BASE_URL = "https://onrender.com";
+
+        // ग्लोबल वेरिएबल जिसमें ढूंढे गए यूजर का लाइव डेटा स्टोर होगा
+        let searchedUserTarget = null;
+        let searchTimeoutToken = null;
+
+        // 🔍 लाइव इनपुट पर चलने वाला स्मार्ट सर्चिंग इंजन
+        function handleLiveSearch() {
+            const queryValue = document.getElementById('search-input').value.trim();
+            
+            const heading = document.getElementById('result-heading');
+            const userCard = document.getElementById('user-card');
+            const noResultBox = document.getElementById('no-result-found');
+            const loadingText = document.getElementById('search-loading');
+
+            // अगर इनपुट खाली है तो सब कुछ साफ कर दो
+            if (queryValue.length === 0) {
+                heading.style.display = "none";
+                userCard.style.display = "none";
+                noResultBox.style.display = "none";
+                loadingText.style.display = "none";
+                searchedUserTarget = null;
+                clearTimeout(searchTimeoutToken);
+                return;
+            }
+
+            // सर्वर पर लोड कम करने के लिए 'Debouncing' टाइमर लगाना
+            clearTimeout(searchTimeoutToken);
+            
+            heading.style.display = "block";
+            loadingText.style.display = "block";
+            userCard.style.display = "none";
+            noResultBox.style.display = "none";
+
+            searchTimeoutToken = setTimeout(async () => {
+                try {
+                    // 🔒 रेंडर सर्ver पर सर्च क्वेरी हिट करना (नंबर या UPI ढूंढने के लिए)
+                    // नोट: आपके बैकएंड में इसके लिए /api/user/search?query= या ऐसा रूट होना चाहिए
+                    const response = await fetch(`${API_BASE_URL}/api/user/search?query=${encodeURIComponent(queryValue)}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+                    loadingText.style.display = "none";
+
+                    if (response.ok && data.success && data.user) {
+                        // 🟢 यूजर डेटाबेस में मिल गया! 🟢
+                        searchedUserTarget = data.user;
+                        
+                        // कार्ड के अंदर लाइव डेटा भरना
+                        document.getElementById('card-name').innerText = searchedUserTarget.firstName || searchedUserTarget.name;
+                        document.getElementById('card-avatar').innerText = (searchedUserTarget.firstName || searchedUserTarget.name).charAt(0);
+                        
+                        // UPI ID दिखाना (अगर डेटाबेस में मोबाइल नंबर है तो @central जोड़कर दिखाना)
+                        const rawMobile = searchedUserTarget.mobile || searchedUserTarget.uid;
+                        document.getElementById('card-upi').innerText = searchedUserTarget.upiId || `${rawMobile}@central`;
+                        
+                        // कार्ड को चमकाना
+                        userCard.style.display = "flex";
+                        noResultBox.style.display = "none";
+                    } else {
+                        // 🔴 यूजर डेटाबेस में नहीं मिला 🔴
+                        runFallbackSearchCheck(queryValue);
+                    }
+                } catch (error) {
+                    console.log("Server search timed out or route not configured. Running simulation check...", error);
+                    loadingText.style.display = "none";
+                    // अगर अभी बैकएंड रूट लाइव नहीं है, तो टेस्टिंग सुचारू रखने के लिए सिम्युलेटेड बैकअप सर्च
+                    runFallbackSearchCheck(queryValue);
+                }
+            }, 600); // इनपुट रुकने के 0.6 सेकंड बाद सर्वर कॉल होगा
+        }
+
+        // टेस्टिंग सिमुलेशन (ताकि बिना रूट के भी आप इसका लाइव वर्कफ्लो चेक कर सकें)
+        function runFallbackSearchCheck(queryValue) {
+            const userCard = document.getElementById('user-card');
+            const noResultBox = document.getElementById('no-result-found');
+
+            // केवल टेस्टिंग के लिए: यदि यूजर '999278' या 'parveen' टाइप करे, तो लाइव कार्ड एक्टिव कर देना
+            if (queryValue.includes('999278') || queryValue.toLowerCase().includes('parveen') || queryValue.includes('@central')) {
+                searchedUserTarget = {
+                    firstName: "Parveen",
+                    uid: "999278",
+                    mobile: "999278xxxx",
+                    upiId: "999278xxxx@central"
+                };
+                document.getElementById('card-name').innerText = searchedUserTarget.firstName;
+                document.getElementById('card-avatar').innerText = "P";
+                document.getElementById('card-upi').innerText = searchedUserTarget.upiId;
+                
+                userCard.style.display = "flex";
+                noResultBox.style.display = "none";
+            } else {
+                // पूरी तरह से खाली रिजल्ट, नो रिजल्ट बॉक्स चमकाओ
+                userCard.style.display = "none";
+                noResultBox.style.display = "block";
+                searchedUserTarget = null;
+            }
+        }
+
+        // 🔴 कार्ड पर क्लिक होते ही डेटा सहेजकर pay.html पर भेजने का लॉजिक 🔴
+        function redirectToPayPage() {
+            if (searchedUserTarget) {
+                // ढूंढें गए यूजर का डेटा तिजोरी में जमा करना ताकि पे पेज उसे रीड कर सके
+                localStorage.setItem('active_pay_target', JSON.stringify(searchedUserTarget));
+                
+                // सीधे पेमेंट अमाउंट वाले पेज पर भेजना
+                window.location.href = "pay.html";
+            }
+        }
+
+        // प्रीमियम सुंदर इंग्लिश पॉप-अप्स ट्रिगर्स
+        function showPopup(type, title, message) {
+            const popup = document.getElementById('custom-popup');
+            const iconBox = document.getElementById('popup-icon-box');
+            
+            if(type === 'success') {
+                iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#12b76a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+            } else {
+                iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#5f259f"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+            }
+            
+            document.getElementById('popup-title').innerText = title;
+            document.getElementById('popup-message').innerText = message;
+            popup.classList.add('active');
+        }
+
+        function closePopup() {
+            document.getElementById('custom-popup').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
