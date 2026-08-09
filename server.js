@@ -285,7 +285,8 @@ app.post('/api/wallet/transfer', async (req, res) => {
         //         
         await sender.save();
         await receiver.save();
-
+const realUTR = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+        const realTransferID = "TXN-" + Math.random().toString(36).substring(2, 10).toUpperCase();
         //  :        'Successful'    
         newTransactionLog.status = 'Successful';
         await newTransactionLog.save();
