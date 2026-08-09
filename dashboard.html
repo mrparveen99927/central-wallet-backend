@@ -7,34 +7,35 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
 body { background: #000000; color: #ffffff; padding-bottom: 70px; display: flex; justify-content: center; min-height: 100vh; }
-.dashboard-container { width: 100%; max-width: 450px; background: #000000; padding: 16px; position: relative; }
+.dashboard-container { width: 100%; max-width: 450px; background: #000000; padding: 14px; position: relative; }
 
-/* 👤 Top Header with Profile Icon */
-.top-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 15px; }
-.profile-trigger { width: 42px; height: 42px; background: #9d4edd; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; cursor: pointer; font-size: 18px; border: 2px solid #333; }
-.app-title { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
+/* 👤 Top Navigation Bar */
+.top-nav { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; margin-bottom: 12px; }
+.profile-trigger { width: 38px; height: 38px; background: #9d4edd; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; cursor: pointer; font-size: 16px; border: 2px solid #222; }
+.app-title { font-size: 16px; font-weight: bold; letter-spacing: 0.5px; }
 
-/* 📺 Advertisement Banner Box */
-.ad-banner { width: 100%; height: 80px; background: #121212; border: 1px dashed #334155; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #64748b; font-size: 13px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+/* 📺 Advertisement Banner */
+.ad-banner { width: 100%; height: 65px; background: #121212; border: 1px dashed #334155; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: #64748b; font-size: 11px; font-weight: bold; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
 
-/* 🪙 Coin Balance Section */
-.balance-section { text-align: center; margin-bottom: 25px; padding: 10px 0; }
-.balance-section p { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-.balance-section h1 { font-size: 38px; color: #ffffff; font-weight: 8px; }
-.balance-section h1 span { color: #9d4edd; font-size: 22px; margin-left: 5px; }
+/* 🪙 Dual Split Balance Cards (Side-by-Side) */
+.balance-row { display: flex; gap: 10px; margin-bottom: 20px; }
+.balance-card { flex: 1; background: #121212; border: 1px solid #1c1c1c; padding: 12px; border-radius: 14px; text-align: left; }
+.balance-card p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.balance-card h2 { font-size: 18px; color: #ffffff; font-weight: bold; display: flex; align-items: baseline; gap: 4px; }
+.balance-card h2 span { color: #9d4edd; font-size: 12px; font-weight: bold; }
 
-/* 🎛️ 4 Main Action Boxes (Grid Layout) */
-.grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 25px; }
-.action-box { background: #121212; border: 1px solid #1c1c1c; padding: 20px 15px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 110px; }
+/* 🎛️ 4 Main Action Boxes (Smaller Grid Layout) */
+.grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.action-box { background: #121212; border: 1px solid #1c1c1c; padding: 14px 10px; border-radius: 14px; text-align: center; cursor: pointer; transition: 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 85px; }
 .action-box:hover { border-color: #9d4edd; background: #161616; }
-.box-icon { font-size: 24px; }
-.box-title { font-size: 14px; font-weight: bold; color: #fff; letter-spacing: 0.5px; }
+.box-icon { font-size: 20px; }
+.box-title { font-size: 12px; font-weight: bold; color: #fff; letter-spacing: 0.5px; }
 
-/* 🧭 Bottom Fixed Navigation Bar */
-.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: #121212; border-top: 1px solid #1c1c1c; display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; }
-.nav-item { background: none; border: none; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 11px; font-weight: bold; width: 20%; text-transform: uppercase; }
+/* 🧭 Fixed Bottom Navigation Bar */
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: #121212; border-top: 1px solid #1c1c1c; display: flex; justify-content: space-around; padding: 10px 0; z-index: 999; }
+.nav-item { background: none; border: none; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 10px; font-weight: bold; width: 20%; text-transform: uppercase; }
 .nav-item.active { color: #9d4edd; }
-.nav-icon { font-size: 18px; }
+.nav-icon { font-size: 16px; }
 </style>
 </head>
 <body>
@@ -43,7 +44,6 @@ body { background: #000000; color: #ffffff; padding-bottom: 70px; display: flex;
     <!-- 👤 Top Navigation Bar -->
     <div class="top-nav">
         <div class="app-title">CENTRAL WALLET</div>
-        <!-- गोल प्रोफाइल बटन - इस पर क्लिक करते ही profile.html खुलेगी -->
         <div class="profile-trigger" onclick="navigateTo('profile.html')">U</div>
     </div>
 
@@ -52,13 +52,22 @@ body { background: #000000; color: #ffffff; padding-bottom: 70px; display: flex;
         Advertisement Banner Space
     </div>
 
-    <!-- 🪙 Virtual Coin Balance Displays -->
-    <div class="balance-section">
-        <p>Available Balance</p>
-        <h1 id="coin-balance">0.00<span>COINS</span></h1>
+    <!-- 🪙 Dual Split Balance Row -->
+    <div class="balance-row">
+        <!-- Left Side: Live Game Coins from MongoDB -->
+        <div class="balance-card">
+            <p>Game Balance</p>
+            <h2 id="coin-balance">0.00 <span>COINS</span></h2>
+        </div>
+        
+        <!-- Right Side: Future Crypto Token Placeholder -->
+        <div class="balance-card">
+            <p>Crypto Balance</p>
+            <h2 id="crypto-balance">0.00 <span>XYZ</span></h2>
+        </div>
     </div>
 
-    <!-- 🎛️ 4 Grid Action Boxes -->
+    <!-- 🎛️ 4 Smaller Grid Action Boxes -->
     <div class="grid-container">
         <!-- Box 1: Phone / UPI Pay -->
         <div class="action-box" onclick="navigateTo('upi-pay.html')">
@@ -110,11 +119,11 @@ body { background: #000000; color: #ffffff; padding-bottom: 70px; display: flex;
 // Live Render Server URL
 const API_URL = "https://central-wallet-game-api.onrender.com";
 
-// Load user data dynamically from database on page load
+// Automatically execute database sync on load
 window.onload = async function() {
     const uid = localStorage.getItem('user_uid');
     
-    // Security check: Redirect to login if token is missing
+    // Protection: Bounce back to login if session missing
     if (!uid) {
         window.location.href = "index.html";
         return;
@@ -123,7 +132,7 @@ window.onload = async function() {
     await fetchLiveUserData(uid);
 };
 
-// Fetch fresh name and coin balance from MongoDB
+// Sync live profile info and coins from MongoDB
 async function fetchLiveUserData(uid) {
     try {
         const name = localStorage.getItem('user_name');
@@ -131,27 +140,30 @@ async function fetchLiveUserData(uid) {
             document.querySelector('.profile-trigger').innerText = name.charAt(0).toUpperCase();
         }
 
-        // Fetch official coin balance from render server
+        // Hit render API endpoint to get real balance
         const balanceRes = await fetch(`${API_URL}/api/wallet/balance?uid=${uid}`);
         const balanceData = await balanceRes.json();
         
         if (balanceRes.ok && balanceData.success) {
-            document.getElementById('coin-balance').innerHTML = `${balanceData.balance.toFixed(2)}<span>COINS</span>`;
+            document.getElementById('coin-balance').innerHTML = `${balanceData.balance.toFixed(2)} <span>COINS</span>`;
         } else {
-            document.getElementById('coin-balance').innerHTML = `0.00<span>COINS</span>`;
+            document.getElementById('coin-balance').innerHTML = `0.00 <span>COINS</span>`;
         }
+
+        // Placeholder for future Crypto token integration
+        document.getElementById('crypto-balance').innerHTML = `0.00 <span>XYZ</span>`;
 
     } catch (err) {
         console.error("Failed to sync live data from MongoDB:", err);
-        document.getElementById('coin-balance').innerHTML = `0.00<span>COINS</span>`;
+        document.getElementById('coin-balance').innerHTML = `0.00 <span>COINS</span>`;
+        document.getElementById('crypto-balance').innerHTML = `0.00 <span>XYZ</span>`;
     }
 }
 
-// Global navigation router
+// Global UI Navigation Handler
 function navigateTo(pageName) {
     window.location.href = pageName;
 }
 </script>
-
 </body>
 </html>
