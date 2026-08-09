@@ -9,7 +9,12 @@ const app = express();
 // 1. MIDDLEWARES (       )
 // ==========================================
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: '*', //       ( GitHub Pages)       
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 
 // ==========================================
 // 2. MONGODB CONNECTION ( )
