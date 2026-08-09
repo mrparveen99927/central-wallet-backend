@@ -237,64 +237,81 @@ app.get('/api/user/search', async (req, res) => {
 });
 
 
-// API 4:    (3-   -  )
+// API 4:       (100%    )
 app.post('/api/wallet/transfer', async (req, res) => {
-    const { senderUid, receiverUid, amount } = req.body;
-    const transferAmount = Number(amount);
-
-    //    'Processing'  
+    // 1.            'Processing'    
     const newTransactionLog = new Message({
-        senderUid,
-        receiverUid,
+        senderUid: req.body.senderUid,
+        receiverUid: req.body.receiverUid,
         type: 'payment',
-        content: transferAmount.toString(),
-        status: 'Processing'
+        content: req.body.amount ? req.body.amount.toString() : "0",
+        status: 'Processing' //       
     });
 
-    //   
-    let sender = null; 
-    let senderOriginalBalance = 0;
-
     try {
-        sender = await User.findOne({ uid: senderUid });
-        const receiver = await User.findOne({ uid: receiverUid });
+        const { senderUid, receiverUid, amount } = req.body;
 
-        if (!sender || !receiver || sender.balance < transferAmount) {
+        //   1:         ?
+        if (!senderUid || !receiverUid || !amount || Number(amount) <= 0) {
             newTransactionLog.status = 'Failed';
             await newTransactionLog.save();
-            return res.status(400).json({ success: false, message: "Declined: Balance check failed." });
+            return res.status(400).json({ success: false, message: "Invalid parameters or amount." });
         }
 
-        //        
-        senderOriginalBalance = sender.balance;
+        //           
+        const sender = await User.findOne({ uid: senderUid });
+        const receiver = await User.findOne({ uid: receiverUid });
 
-        //   (     )
-        sender.balance -= transferAmount;
+        //   2:         ?
+        if (!sender || !receiver) {
+            newTransactionLog.status = 'Failed';
+            await newTransactionLog.save();
+            return res.status(444).json({ success: false, message: "Sender or Receiver wallet account not found." });
+        }
+
+        //   3:          ?
+        const transferAmount = Number(amount);
+        if (sender.balance < transferAmount) {
+            newTransactionLog.status = 'Failed';
+            await newTransactionLog.save();
+            return res.status(400).json({ success: false, message: "Declined: Insufficient wallet balance." });
+        }
+
+        //     :
+        //                
+        sender.balance = sender.balance - transferAmount;
+        receiver.balance = receiver.balance + transferAmount;
+
+        //         
         await sender.save();
-
-        //        
-        receiver.balance += transferAmount;
         await receiver.save();
 
-        //    
+        //  :        'Successful'    
         newTransactionLog.status = 'Successful';
         await newTransactionLog.save();
-        return res.status(200).json({ success: true, message: "Transferred successfully" });
+
+        //      
+        return res.status(200).json({
+            success: true,
+            message: "Transaction completed successfully.",
+            data: newTransactionLog
+        });
 
     } catch (error) {
-        console.error("  ,  ...", error);
-
-        //    :          ,   
-        if (sender) {
-            sender.balance = senderOriginalBalance; 
-            await sender.save();
-        }
-
-        //     
+        console.error("block    :", error);
+        
+        //              'Failed'  
         newTransactionLog.status = 'Failed';
-        await newTransactionLog.save();
-
-        return res.status(500).json({ success: false, message: "Network connection dropped. Funds rolled back." });
+        try {
+            await newTransactionLog.save();
+        } catch (dbErr) {
+            console.log("      :", dbErr);
+        }
+        
+        return res.status(500).json({ 
+            success: false, 
+            message: "Transaction failed due to internal connection drop." 
+        });
     }
 });
 
