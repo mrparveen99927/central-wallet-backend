@@ -315,15 +315,119 @@
             <button class="popup-btn" onclick="closePopup()">OK</button>
         </div>
     </div>
-        <script>
-        // 🔴 आपके असली रेंडर सर्वर का लिंक 🔴
-        const API_BASE_URL = "https://onrender.com";
+        <!-- 3. Dynamic Results Display Area -->
+    <div class="result-container">
+        <div id="result-heading" class="result-title">Search Result</div>
+        
+        <div id="search-loading" class="search-loading-text">Searching backend database...</div>
 
-        // ग्लोबल वेरिएबल जिसमें ढूंढे गए यूजर का लाइव डेटा स्टोर होगा
+        <!-- जब यूजर मिल जाएगा तब यह कार्ड लाइव होकर चमकेगा -->
+        <div id="user-card" class="user-result-card" onclick="redirectToPayPage()">
+            <div class="card-left">
+                <div id="card-avatar" class="user-avatar-circle">?</div>
+                <div class="user-details-box">
+                    <h4 id="card-name">User Name</h4>
+                    <p id="card-upi">mobile@central</p>
+                </div>
+            </div>
+            <svg class="pay-arrow-svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+
+        <!-- जब डेटाबेस में यूजर नहीं मिलेगा तो यह बॉक्स दिखेगा -->
+        <div id="no-result-found" class="no-result-box">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-4h-2V7h2v4z"/></svg>
+            <h5>No Result Found</h5>
+            <p>This mobile number or UPI ID is not registered with Central Wallet.</p>
+        </div>
+
+        <!-- 🔴 NEW RECENT TRANSFERS LIST SECTION (यह नया हिस्सा जुड़ेगा) 🔴 -->
+        <div id="recent-section" style="margin-top: 24px;">
+            <div class="result-title" style="display: block; margin-bottom: 12px;">Recent Transfers</div>
+            <!-- रिसेंट कांटेक्ट लिस्ट का डिब्बा -->
+            <div id="recent-list-box" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- यहाँ जावास्क्रिप्ट से पुराने कस्टमर्स की लिस्ट ऑटोमैटिक लोड होगी -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Premium English Custom Popup Box -->
+    <div id="custom-popup" class="popup-overlay">
+        <div class="popup-box">
+            <div id="popup-icon-box" class="popup-icon-container"></div>
+            <div id="popup-title" class="popup-title">Notification</div>
+            <div id="popup-message" class="popup-message">Message details go here.</div>
+            <button class="popup-btn" onclick="closePopup()">OK</button>
+        </div>
+    </div>
+    
+            <script>
+        const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
+
         let searchedUserTarget = null;
         let searchTimeoutToken = null;
 
-        // 🔍 लाइव इनपुट पर चलने वाला स्मार्ट सर्चिंग इंजन
+        // 🔴 पेज लोड होते ही पुरानी रिसेंट लिस्ट को स्क्रीन पर दिखाने का लॉजिक 🔴
+        window.addEventListener('DOMContentLoaded', () => {
+            loadRecentTransfersList();
+        });
+
+        function loadRecentTransfersList() {
+            const listBox = document.getElementById('recent-list-box');
+            const recentSection = document.getElementById('recent-section');
+            
+            // लोकल स्टोरेज की रिसेंट तिजोरी से लिस्ट निकालना
+            const recentUsers = JSON.parse(localStorage.getItem('recent_wallet_transfers')) || [];
+
+            if (recentUsers.length === 0) {
+                // अगर कोई पुराना लेन-देन नहीं है, तो डमी के लिए प्रवीन नाम का एक सुंदर कार्ड दिखा देते हैं ताकि खाली न लगे
+                const dummyArray = [{
+                    firstName: "Parveen (Demo)",
+                    uid: "999278",
+                    mobile: "999278xxxx",
+                    upiId: "999278xxxx@central"
+                }];
+                renderRecentCards(dummyArray, listBox);
+            } else {
+                // अगर असली डेटा मौजूद है, तो उसे स्क्रीन पर छापना
+                renderRecentCards(recentUsers, listBox);
+            }
+        }
+
+        // रिसेंट कार्ड्स को HTML में रेंडर करने का फंक्शन
+        function renderRecentCards(usersArray, container) {
+            container.innerHTML = ""; // पुराना साफ करो
+            
+            usersArray.forEach(user => {
+                const card = document.createElement('div');
+                card.className = "user-result-card";
+                card.style.display = "flex"; // हमेशा दिखेगा
+                card.style.marginBottom = "0px";
+                
+                const firstLetter = (user.firstName || user.name || "U").charAt(0);
+                const upiText = user.upiId || `${user.mobile || user.uid}@central`;
+
+                card.innerHTML = `
+                    <div class="card-left">
+                        <div class="user-avatar-circle" style="background: #efecf7; color: #5f259f;">${firstLetter}</div>
+                        <div class="user-details-box">
+                            <h4>${user.firstName || user.name}</h4>
+                            <p style="color: #777777; font-weight: 400;">ID: ${user.uid} | ${upiText}</p>
+                        </div>
+                    </div>
+                    <svg class="pay-arrow-svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                `;
+
+                // कार्ड पर क्लिक करते ही सीधे पे पेज पर भेजने का क्लिक इवेंट
+                card.onclick = () => {
+                    localStorage.setItem('active_pay_target', JSON.stringify(user));
+                    window.location.href = "pay.html";
+                };
+
+                container.appendChild(card);
+            });
+        }
+                // लाइव इनपुट सर्चिंग इंजन
         function handleLiveSearch() {
             const queryValue = document.getElementById('search-input').value.trim();
             
@@ -331,30 +435,29 @@
             const userCard = document.getElementById('user-card');
             const noResultBox = document.getElementById('no-result-found');
             const loadingText = document.getElementById('search-loading');
+            const recentSection = document.getElementById('recent-section'); // रिसेंट ब्लॉक
 
-            // अगर इनपुट खाली है तो सब कुछ साफ कर दो
             if (queryValue.length === 0) {
                 heading.style.display = "none";
                 userCard.style.display = "none";
                 noResultBox.style.display = "none";
                 loadingText.style.display = "none";
+                recentSection.style.display = "block"; // सर्च खाली होने पर रिसेंट लिस्ट वापस दिखाओ
                 searchedUserTarget = null;
                 clearTimeout(searchTimeoutToken);
                 return;
             }
 
-            // सर्वर पर लोड कम करने के लिए 'Debouncing' टाइमर लगाना
             clearTimeout(searchTimeoutToken);
             
             heading.style.display = "block";
             loadingText.style.display = "block";
             userCard.style.display = "none";
             noResultBox.style.display = "none";
+            recentSection.style.display = "none"; // सर्च करते समय नीचे की रिसेंट लिस्ट छुपा दो
 
             searchTimeoutToken = setTimeout(async () => {
                 try {
-                    // 🔒 रेंडर सर्ver पर सर्च क्वेरी हिट करना (नंबर या UPI ढूंढने के लिए)
-                    // नोट: आपके बैकएंड में इसके लिए /api/user/search?query= या ऐसा रूट होना चाहिए
                     const response = await fetch(`${API_BASE_URL}/api/user/search?query=${encodeURIComponent(queryValue)}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
@@ -364,39 +467,28 @@
                     loadingText.style.display = "none";
 
                     if (response.ok && data.success && data.user) {
-                        // 🟢 यूजर डेटाबेस में मिल गया! 🟢
                         searchedUserTarget = data.user;
-                        
-                        // कार्ड के अंदर लाइव डेटा भरना
                         document.getElementById('card-name').innerText = searchedUserTarget.firstName || searchedUserTarget.name;
                         document.getElementById('card-avatar').innerText = (searchedUserTarget.firstName || searchedUserTarget.name).charAt(0);
                         
-                        // UPI ID दिखाना (अगर डेटाबेस में मोबाइल नंबर है तो @central जोड़कर दिखाना)
                         const rawMobile = searchedUserTarget.mobile || searchedUserTarget.uid;
                         document.getElementById('card-upi').innerText = searchedUserTarget.upiId || `${rawMobile}@central`;
                         
-                        // कार्ड को चमकाना
                         userCard.style.display = "flex";
-                        noResultBox.style.display = "none";
                     } else {
-                        // 🔴 यूजर डेटाबेस में नहीं मिला 🔴
                         runFallbackSearchCheck(queryValue);
                     }
                 } catch (error) {
-                    console.log("Server search timed out or route not configured. Running simulation check...", error);
                     loadingText.style.display = "none";
-                    // अगर अभी बैकएंड रूट लाइव नहीं है, तो टेस्टिंग सुचारू रखने के लिए सिम्युलेटेड बैकअप सर्च
                     runFallbackSearchCheck(queryValue);
                 }
-            }, 600); // इनपुट रुकने के 0.6 सेकंड बाद सर्वर कॉल होगा
+            }, 600);
         }
 
-        // टेस्टिंग सिमुलेशन (ताकि बिना रूट के भी आप इसका लाइव वर्कफ्लो चेक कर सकें)
         function runFallbackSearchCheck(queryValue) {
             const userCard = document.getElementById('user-card');
             const noResultBox = document.getElementById('no-result-found');
 
-            // केवल टेस्टिंग के लिए: यदि यूजर '999278' या 'parveen' टाइप करे, तो लाइव कार्ड एक्टिव कर देना
             if (queryValue.includes('999278') || queryValue.toLowerCase().includes('parveen') || queryValue.includes('@central')) {
                 searchedUserTarget = {
                     firstName: "Parveen",
@@ -407,47 +499,51 @@
                 document.getElementById('card-name').innerText = searchedUserTarget.firstName;
                 document.getElementById('card-avatar').innerText = "P";
                 document.getElementById('card-upi').innerText = searchedUserTarget.upiId;
-                
                 userCard.style.display = "flex";
-                noResultBox.style.display = "none";
             } else {
-                // पूरी तरह से खाली रिजल्ट, नो रिजल्ट बॉक्स चमकाओ
                 userCard.style.display = "none";
                 noResultBox.style.display = "block";
                 searchedUserTarget = null;
             }
         }
 
-        // 🔴 कार्ड पर क्लिक होते ही डेटा सहेजकर pay.html पर भेजने का लॉजिक 🔴
+        // 🔴 पे पेज पर भेजने और इस यूजर को 'Recent' तिजोरी में ऑटो-ऐड करने का लॉजिक 🔴
         function redirectToPayPage() {
             if (searchedUserTarget) {
-                // ढूंढें गए यूजर का डेटा तिजोरी में जमा करना ताकि पे पेज उसे रीड कर सके
-                localStorage.setItem('active_pay_target', JSON.stringify(searchedUserTarget));
+                // रिसेंट लिस्ट की पुरानी तिजोरी खोलना
+                let recentList = JSON.parse(localStorage.getItem('recent_wallet_transfers')) || [];
                 
-                // सीधे पेमेंट अमाउंट वाले पेज पर भेजना
+                // यह चेक करना कि क्या यह बंदा लिस्ट में पहले से तो नहीं है?
+                recentList = recentList.filter(u => u.uid !== searchedUserTarget.uid);
+                
+                // इस नए बंदे को लिस्ट में सबसे ऊपर (Top पर) जोड़ना
+                recentList.unshift(searchedUserTarget);
+                
+                // सुरक्षा के लिए लिस्ट को मैक्सिमम 5 से 7 लोगों तक ही सीमित रखना
+                if (recentList.length > 6) recentList.pop();
+                
+                // अपडेटेड लिस्ट को वापस तिजोरी में लॉक करना
+                localStorage.setItem('recent_wallet_transfers', JSON.stringify(recentList));
+
+                // डेटा पास करके पे पेज पर भेज देना
+                localStorage.setItem('active_pay_target', JSON.stringify(searchedUserTarget));
                 window.location.href = "pay.html";
             }
         }
 
-        // प्रीमियम सुंदर इंग्लिश पॉप-अप्स ट्रिगर्स
         function showPopup(type, title, message) {
             const popup = document.getElementById('custom-popup');
             const iconBox = document.getElementById('popup-icon-box');
-            
             if(type === 'success') {
                 iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#12b76a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
             } else {
                 iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#5f259f"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
             }
-            
             document.getElementById('popup-title').innerText = title;
             document.getElementById('popup-message').innerText = message;
             popup.classList.add('active');
         }
-
-        function closePopup() {
-            document.getElementById('custom-popup').classList.remove('active');
-        }
+        function closePopup() { document.getElementById('custom-popup').classList.remove('active'); }
     </script>
 </body>
 </html>

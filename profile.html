@@ -223,9 +223,14 @@
     </style>
 </head>
 <body>
+
+    <!-- 1. Top Header & Profile Card -->
     <div class="profile-header-bar">
+        <!-- Back Button to Dashboard -->
         <div class="back-btn-css" onclick="window.location.href='dashboard.html'">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
         </div>
         <div class="profile-info-card">
             <div id="prof-letter" class="profile-letter-large">?</div>
@@ -234,7 +239,31 @@
         </div>
     </div>
 
+    <!-- 2. Profile Menu Options List -->
     <div class="menu-container">
+        
+        <!-- 🔒 NEW EXCLUSIVE UPI ID CARD (क्लिक करते ही कॉपी होगा) 🔒 -->
+        <div class="menu-item" onclick="copyUpiIdToClipboard()" style="background: linear-gradient(135deg, #ffffff, #fbf9fe); border-left: 4px solid #5f259f;">
+            <div class="menu-left">
+                <div class="menu-icon-bg" style="background: #f1ecf7;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#5f259f">
+                        <path d="M4 4h7v7H4zm2 2v3h3V6zm0 7h7v7H4zm2 2v3h3v-3zm7-11h7v7h-7zm2 2v3h3V6zm0 7h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm2-2h2v-2h-2zm0-2h2v-2h-2zm2 2h2v-2h-2z"/>
+                    </svg>
+                </div>
+                <div class="menu-text-box">
+                    <h4>My Unique UPI ID</h4>
+                    <p id="prof-upi-id" style="font-size: 13px; font-weight: 700; color: #5f259f; margin-top: 3px; letter-spacing: 0.3px;">loading@central</p>
+                </div>
+            </div>
+            <!-- कॉपी करने का आइकॉन -->
+            <div style="display: flex; align-items: center; gap: 4px;">
+                <span style="font-size: 11px; font-weight: 700; color: #5f259f; text-transform: uppercase;">Copy</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#5f259f">
+                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+            </div>
+        </div>
+        
         <!-- Manage MPIN Option -->
         <div class="menu-item" onclick="handleMpinOptionClick()">
             <div class="menu-left">
@@ -258,7 +287,7 @@
             <svg class="arrow-right-svg" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
 
-        <!-- Transaction History Log Summary -->
+        <!-- Transaction History -->
         <div class="menu-item" onclick="window.location.href='history.html'">
             <div class="menu-left">
                 <div class="menu-icon-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="#5f259f"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
@@ -267,7 +296,7 @@
             <svg class="arrow-right-svg" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
 
-        <!-- Support Desk Link -->
+        <!-- Help Support Desk -->
         <div class="menu-item" onclick="showGeneralPopup('Help & Support', 'Our dedicated customer care team is available 24/7. Contact us at support@centralwallet.com')">
             <div class="menu-left">
                 <div class="menu-icon-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="#5f259f"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg></div>
@@ -276,7 +305,7 @@
             <svg class="arrow-right-svg" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
         </div>
 
-        <!-- SECURE LOGOUT BUTTON WITH POPUP -->
+        <!-- SECURE LOGOUT BUTTON -->
         <div class="menu-item logout-btn" onclick="triggerLogoutPopup()">
             <div class="menu-left">
                 <div class="menu-icon-bg logout-icon-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="#f04438"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg></div>
@@ -286,41 +315,36 @@
         </div>
     </div>
 
-    <!-- MPIN CONFIGURATION MODAL (Password Lock Field Included) -->
+    <!-- MPIN MODAL -->
     <div id="mpin-modal" class="popup-overlay">
         <div class="popup-box">
             <div id="mpin-popup-title" class="popup-title">Secure MPIN Configuration</div>
             <form id="mpin-form" onsubmit="submitMpinForm(event)">
-                
-                <!-- 🔒 यह पासवर्ड फील्ड अनिवार्य है, गलत पासवर्ड पर ब्लॉक करने के लिए -->
                 <div class="pin-input-group">
                     <label>Confirm Wallet Login Password</label>
                     <div class="pin-input-wrapper">
                         <input type="password" id="verify-password" placeholder="Enter login password to verify" required style="letter-spacing: normal; text-align: left; font-size: 14px;">
                     </div>
                 </div>
-
                 <div class="pin-input-group">
                     <label id="new-pin-label">Enter 4-Digit MPIN</label>
                     <div class="pin-input-wrapper">
-                        <input type="password" id="new-mpin" maxlength="4" placeholder="••••" pattern="[0-9]{4}" required style="text-align: center; letter-spacing: 4px;">
+                        <input type="password" id="new-mpin" maxlength="4" placeholder="••••" pattern="[0-9]{4}" required style="text-transform: uppercase; text-align: center; letter-spacing: 4px;">
                     </div>
                 </div>
-
                 <div class="pin-input-group">
                     <label>Confirm 4-Digit MPIN</label>
                     <div class="pin-input-wrapper">
-                        <input type="password" id="confirm-mpin" maxlength="4" placeholder="••••" pattern="[0-9]{4}" required style="text-align: center; letter-spacing: 4px;">
+                        <input type="password" id="confirm-mpin" maxlength="4" placeholder="••••" pattern="[0-9]{4}" required style="text-transform: uppercase; text-align: center; letter-spacing: 4px;">
                     </div>
                 </div>
-
                 <button type="submit" class="popup-action-btn">Confirm & Save</button>
             </form>
             <div class="popup-cancel-link" onclick="closeMpinModal()">Cancel</div>
         </div>
     </div>
 
-    <!-- DOUBLE BUTTON CONFIRM LOGOUT POPUP -->
+    <!-- CONFIRM LOGOUT POPUP -->
     <div id="logout-confirm-popup" class="popup-overlay">
         <div class="popup-box">
             <div class="notif-icon-box"><svg width="46" height="46" viewBox="0 0 24 24" fill="#f04438"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
@@ -331,7 +355,7 @@
         </div>
     </div>
 
-    <!-- GENERAL PREMIUM ALERT POPUP -->
+    <!-- GENERAL ALERT POPUP -->
     <div id="general-popup" class="popup-overlay">
         <div class="popup-box">
             <div id="general-icon-box" class="notif-icon-box"></div>
@@ -340,34 +364,51 @@
             <button class="popup-btn" onclick="closeGeneralPopup()">OK</button>
         </div>
     </div>
-            <script>
-        // लाइव प्रोफाइल डेटा लोडिंग
+        <script>
         window.addEventListener('DOMContentLoaded', () => {
             const userDataString = localStorage.getItem('user_data');
             if (userDataString) {
                 const user = JSON.parse(userDataString);
+                
+                // 1. Live profile details set karna
                 if (user.firstName) {
                     document.getElementById('prof-name').innerText = user.firstName;
                     document.getElementById('prof-letter').innerText = user.firstName.charAt(0);
                 }
                 if (user.uid) document.getElementById('prof-uid').innerText = user.uid;
 
-                // क्या यूजर के पास पहले से कोई MPIN सेव है?
+                // 2. 🔴 DYNAMIC UPI ID GENERATION (अगर मोबाइल न मिले तो UID का उपयोग करेगा)
+                const mobileNum = user.mobile || user.uid || "999278";
+                const generatedUpi = `${mobileNum}@central`;
+                document.getElementById('prof-upi-id').innerText = generatedUpi;
+
+                // MPIN labels logic
                 const savedMpin = localStorage.getItem(`mpin_${user.uid}`);
                 const titleOption = document.getElementById('mpin-option-title');
                 const descOption = document.getElementById('mpin-option-desc');
 
                 if (!savedMpin) {
-                    // फर्स्ट टाइम यूजर इंटरफेस
                     titleOption.innerText = "Generate Security MPIN";
                     descOption.innerText = "Create a secure 4-digit PIN for first transaction";
                 } else {
-                    // पुराना यूजर इंटरफेस (सिर्फ चेंज या अपडेट का ऑप्शन)
                     titleOption.innerText = "Change Security MPIN";
                     descOption.innerText = "Update your active transaction security PIN";
                 }
             } else { window.location.href = "index.html"; }
         });
+
+        // 🔴 ONE-CLICK COPY TO CLIPBOARD FUNCTION (सुंदर इंग्लिश पॉपअप के साथ)
+        function copyUpiIdToClipboard() {
+            const upiText = document.getElementById('prof-upi-id').innerText;
+            
+            // Clipboard interface call
+            navigator.clipboard.writeText(upiText).then(() => {
+                showGeneralPopup('Copy Successful', `Your unique UPI ID: ${upiText} has been copied to your clipboard. Send it anywhere!`, 'success');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                showGeneralPopup('Copy Failed', 'Please copy it manually from the screen.', 'error');
+            });
+        }
 
         function handleMpinOptionClick() {
             const user = JSON.parse(localStorage.getItem('user_data'));
@@ -390,35 +431,29 @@
             modal.classList.add('active');
         }
 
-        // 🔴 नया लोहे का गेट: यहाँ पासवर्ड अक्षर-टू-अक्षर 100% सही चेक होगा!
         function submitMpinForm(event) {
             event.preventDefault();
             const user = JSON.parse(localStorage.getItem('user_data'));
             const savedMpin = localStorage.getItem(`mpin_${user.uid}`);
 
-            const inputPassword = document.getElementById('verify-password').value; // जो यूजर ने अभी टाइप किया
+            const inputPassword = document.getElementById('verify-password').value; 
             const newMpinInput = document.getElementById('new-mpin').value;
             const confirmMpinInput = document.getElementById('confirm-mpin').value;
 
-            // 🔒 सीक्रेट पासवर्ड तिजोरी से असली पासवर्ड खींचना
             const realPassword = localStorage.getItem('wallet_pass_lock');
 
-            // 🔥 100% कड़ा सुरक्षा कवच जांच: इनपुट पासवर्ड असली पासवर्ड से मिलना ही चाहिए!
             if (!realPassword || inputPassword !== realPassword) {
                 closeMpinModal();
-                // गलत पासवर्ड होने पर लाल रंग का सुंदर एरर पॉप-अप दिखाएगा और ब्लॉक कर देगा
                 showGeneralPopup('Security Verification Failed', 'The login password you entered is incorrect. MPIN configuration has been blocked for safety.', 'error');
                 return;
             }
 
-            // न्यू पिन और कन्फर्म पिन का मैच होना
             if (newMpinInput !== confirmMpinInput) {
                 closeMpinModal();
                 showGeneralPopup('Configuration Error', 'New MPIN and Confirm MPIN do not match. Please try again.', 'error');
                 return;
             }
 
-            // सफलता! पासवर्ड और पिन दोनों सही होने पर ही तिजोरी में लॉक होगा
             localStorage.setItem(`mpin_${user.uid}`, newMpinInput);
             closeMpinModal();
 
@@ -436,7 +471,6 @@
         function closeLogoutPopup() { document.getElementById('logout-confirm-popup').classList.remove('active'); }
         
         function executeLogout() { 
-            // लॉगआउट पर पूरी तिजोरी साफ करना
             localStorage.removeItem('user_data'); 
             localStorage.removeItem('wallet_pass_lock');
             window.location.href = "index.html"; 
