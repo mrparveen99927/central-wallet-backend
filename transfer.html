@@ -485,27 +485,33 @@
             }, 600);
         }
 
-        function runFallbackSearchCheck(queryValue) {
-            const userCard = document.getElementById('user-card');
-            const noResultBox = document.getElementById('no-result-found');
+        // 🛠️ केवल इस फंक्शन को अपनी transfer.html में रीप्लेस (Replace) करें भाई
+function runFallbackSearchCheck(queryValue) {
+    const userCard = document.getElementById('user-card');
+    const noResultBox = document.getElementById('no-result-found');
 
-            if (queryValue.includes('999278') || queryValue.toLowerCase().includes('parveen') || queryValue.includes('@central')) {
-                searchedUserTarget = {
-                    firstName: "Parveen",
-                    uid: "999278",
-                    mobile: "999278xxxx",
-                    upiId: "999278xxxx@central"
-                };
-                document.getElementById('card-name').innerText = searchedUserTarget.firstName;
-                document.getElementById('card-avatar').innerText = "P";
-                document.getElementById('card-upi').innerText = searchedUserTarget.upiId;
-                userCard.style.display = "flex";
-            } else {
-                userCard.style.display = "none";
-                noResultBox.style.display = "block";
-                searchedUserTarget = null;
-            }
-        }
+    // 🔴 यहाँ हमने '@central' वाली गलत शर्त को हटा दिया है, ताकि हर UPI ID पर आपका नाम न आए
+    // अब यह सिर्फ तभी प्रवीन दिखाएगा जब कोई '999278' या 'parveen' टाइप करेगा
+    if (queryValue.includes('999278') || queryValue.toLowerCase().includes('parveen')) {
+        searchedUserTarget = {
+            firstName: "Parveen",
+            uid: "999278",
+            mobile: "999278xxxx",
+            upiId: "999278xxxx@central"
+        };
+        document.getElementById('card-name').innerText = searchedUserTarget.firstName;
+        document.getElementById('card-avatar').innerText = "P";
+        document.getElementById('card-upi').innerText = searchedUserTarget.upiId;
+        
+        userCard.style.display = "flex";
+        noResultBox.style.display = "none";
+    } else {
+        // अगर कोई दूसरा नंबर या UPI ID डालता है जो आपके डेटाबेस में नहीं है, तो सीधे No Result दिखाएगा
+        userCard.style.display = "none";
+        noResultBox.style.display = "block";
+        searchedUserTarget = null;
+    }
+}
 
         // 🔴 पे पेज पर भेजने और इस यूजर को 'Recent' तिजोरी में ऑटो-ऐड करने का लॉजिक 🔴
         function redirectToPayPage() {
