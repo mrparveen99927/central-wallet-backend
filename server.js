@@ -297,6 +297,35 @@ app.post('/api/wallet/transfer', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+// ==========================================
+// 5.B LIVE CHAT & TRANSACTION HISTORY FETCH API
+// ==========================================
+//         -       
+app.get('/api/chat/history', async (req, res) => {
+    try {
+        const { senderUid, receiverUid } = req.query;
+
+        if (!senderUid || !receiverUid) {
+            return res.status(400).json({ success: false, message: "Both senderUid and receiverUid are required." });
+        }
+
+        //   :    A  B   ,  B  A   
+        const logs = await Message.find({
+            $or: [
+                { senderUid: senderUid, receiverUid: receiverUid },
+                { senderUid: receiverUid, receiverUid: senderUid }
+            ]
+        }).sort({ createdAt: 1 }); //     (    )  
+
+        res.status(200).json({
+            success: true,
+            history: logs
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // API 5:          (Live Sync Route)
 app.get('/api/user/:uid', async (req, res) => {
     try {
