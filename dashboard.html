@@ -1,134 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Central Wallet - Dashboard</title>
-<style>
-/* 100% Local Styles - No External Links */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-body { background: #000000; color: #ffffff; padding-bottom: 80px; display: flex; justify-content: center; min-height: 100vh; }
-.container { width: 100%; max-width: 450px; background: #000000; padding: 15px; position: relative; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Wallet - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #f6f7f9;
+            padding-bottom: 80px;
+        }
 
-/* Top Header */
-.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 10px; }
-.app-name { font-size: 18px; font-weight: bold; color: #9d4edd; letter-spacing: 1px; }
-.profile-icon { width: 38px; height: 38px; background: #9d4edd; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 2px solid #222; font-size: 16px; }
+        /* 1. TOP HEADER & LETTER PROFILE SECTION */
+        .header-bar {
+            background: #5f259f; /* PhonePe Purple */
+            padding: 22px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            box-shadow: 0 4px 15px rgba(95, 37, 159, 0.2);
+        }
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        /* नाम का पहला अक्षर दिखाने वाला प्रीमियम गोल डिज़ाइन */
+        .profile-letter-box {
+            width: 46px;
+            height: 46px;
+            background: #ffffff;
+            color: #5f259f;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+        .user-welcome h3 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .user-welcome p {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+        .wallet-balance-box {
+            text-align: right;
+        }
+        .wallet-balance-box p {
+            font-size: 11px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+        .wallet-balance-box h4 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
 
-/* Ad Banner */
-.ad-box { width: 100%; height: 65px; background: #121212; border: 1px dashed #334155; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: #475569; font-size: 11px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; }
+        /* 2. ADVERTISING BANNER CONTAINER */
+        .main-container {
+            padding: 16px;
+        }
+        .ad-banner {
+            width: 100%;
+            height: 110px;
+            background: linear-gradient(135deg, #7f00ff, #e100ff);
+            border-radius: 14px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(225, 0, 255, 0.2);
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+        }
 
-/* Dual Balance Row (Side-by-Side Cards) */
-.balance-row { display: flex; gap: 10px; margin-bottom: 20px; }
-.card { flex: 1; background: #121212; border: 1px solid #1c1c1c; padding: 14px; border-radius: 14px; text-align: left; }
-.card p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-.card h2 { font-size: 18px; color: #ffffff; font-weight: bold; display: flex; align-items: baseline; gap: 4px; }
-.card h2 span { color: #9d4edd; font-size: 12px; font-weight: bold; }
+        /* 3. FOUR PREMIUM ACTION BOXES (GRID SYSTEM) */
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #222222;
+            margin-bottom: 14px;
+            padding-left: 2px;
+            letter-spacing: 0.3px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .action-box {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 22px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f2;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .action-box:active {
+            transform: scale(0.96);
+            background: #fbf9fe;
+        }
+        /* आइकन्स के लिए सुंदर प्रीमियम बैकग्राउंड सर्कल */
+        .icon-circle-bg {
+            width: 52px;
+            height: 52px;
+            background: #f1ecf7;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .action-box span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333333;
+        }
+        
+        /* Incoming Soon Badge Custom Style */
+        .coming-soon-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff9800;
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+        .disabled-box {
+            background: #fbfbfb;
+        }
+        .disabled-box .icon-circle-bg {
+            background: #f0f0f0;
+        }
+        .disabled-box span {
+            color: #777777;
+        }
 
-/* Feature Grid */
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.box { background: #121212; border: 1px solid #1c1c1c; padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.2s; min-height: 90px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
-.box:hover { border-color: #9d4edd; background: #161616; }
-.icon { font-size: 22px; }
-.label { font-size: 12px; font-weight: bold; color: #fff; }
+        /* 4. BOTTOM NAVIGATION BAR */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 68px;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.06);
+            border-top: 1px solid #eeeeee;
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666666;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 20%;
+            height: 100%;
+        }
+        .nav-icon-wrapper {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .nav-icon-svg {
+            width: 22px;
+            height: 22px;
+            fill: #666666;
+        }
+        .nav-item.active {
+            color: #5f259f;
+            font-weight: 700;
+        }
+        .nav-item.active .nav-icon-svg {
+            fill: #5f259f;
+        }
 
-/* Fixed Bottom Nav */
-.footer-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: #121212; border-top: 1px solid #1c1c1c; display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; }
-.nav-btn { background: none; border: none; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 10px; font-weight: bold; text-transform: uppercase; width: 20%; }
-.nav-btn.active { color: #9d4edd; }
-</style>
+        /* 5. PREMIUM CUSTOM POPUP STYLE */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+        }
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .popup-box {
+            background: #ffffff;
+            padding: 30px 24px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 340px;
+            width: 85%;
+            transform: translateY(20px);
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .popup-overlay.active .popup-box {
+            transform: translateY(0);
+        }
+        .popup-icon-container {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 14px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        .popup-message {
+            font-size: 14px;
+            color: #555555;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .popup-btn {
+            width: 100%;
+            padding: 13px;
+            background: #5f259f;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            outline: none;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Header with Original Branding -->
-    <div class="header">
-        <div class="app-name">CENTRAL WALLET</div>
-        <div class="profile-icon" id="user-logo" onclick="location.href='profile.html'">U</div>
-    </div>
-
-    <div class="ad-box">ADVERTISEMENT BANNER</div>
-
-    <!-- Dual Balance Display -->
-    <div class="balance-row">
-        <!-- Left: n&n Wallet Coins -->
-        <div class="card">
-            <p>n&n Balance</p>
-            <h2 id="wallet-bal">0.00 <span>n&n</span></h2>
+    <!-- Upper Header & Live Profile Section -->
+    <div class="header-bar">
+        <div class="profile-section" onclick="goToPage('profile.html')">
+            <!-- User's first letter will automatically show here via JS -->
+            <div id="user-letter" class="profile-letter-box">?</div>
+            <div class="user-welcome">
+                <h3 id="user-name">Loading...</h3>
+                <p>UID: <span id="user-uid">------</span></p>
+            </div>
         </div>
-        <!-- Right: Dynamic Crypto (TON/USDT/Alpha) -->
-        <div class="card">
-            <p id="crypto-label">Crypto Balance</p>
-            <h2 id="crypto-bal">0.00 <span id="crypto-symbol">XYZ</span></h2>
+        <div class="wallet-balance-box">
+            <p>Wallet Balance</p>
+            <h4 id="user-balance">₹0</h4>
         </div>
     </div>
 
-    <!-- Grid Features -->
-    <div class="grid">
-        <div class="box" onclick="location.href='p2p.html'">
-            <div class="icon">📱</div>
-            <div class="label">P2P Transfer</div>
+    <div class="main-container">
+        <!-- Advertising Banner Area -->
+        <div class="ad-banner" onclick="showPopup('info', 'Ad Integration', 'Google Ads or Unity Ads banner space will be live here soon!')">
+            <div>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="white" style="margin: 0 auto 6px auto; display:block;">
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 12h-2v-2h2v2zm0-4h-2V8h2v4z"/>
+                </svg>
+                <span>Google / Unity Ads Banner Area</span>
+            </div>
         </div>
-        <div class="box" onclick="location.href='game-pay.html'">
-            <div class="icon">🎮</div>
-            <div class="label">Game Pay</div>
-        </div>
-        <div class="box" onclick="location.href='deposit.html'">
-            <div class="icon">➕</div>
-            <div class="label">Deposit</div>
-        </div>
-        <div class="box" onclick="location.href='withdraw.html'">
-            <div class="icon">➖</div>
-            <div class="label">Withdraw</div>
-        </div>
-        <div class="box" onclick="location.href='swap-ton.html'">
-            <div class="icon">🔄</div>
-            <div class="label">Swap to TON</div>
-        </div>
-        <div class="box" onclick="location.href='swap-usdt.html'">
-            <div class="icon">💵</div>
-            <div class="label">Swap to USDT</div>
+
+        <!-- Four Main Wallet Option Boxes -->
+        <div class="section-title">Wallet Options</div>
+        <div class="grid-container">
+            <!-- Box 1: To Mobile/UPI -->
+            <div class="action-box" onclick="goToPage('transfer.html')">
+                <div class="icon-circle-bg">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="#5f259f">
+                        <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/>
+                    </svg>
+                </div>
+                <span>To Mobile/UPI</span>
+            </div>
+
+            <!-- Box 2: Game Pay -->
+            <div class="action-box" onclick="goToPage('game-pay.html')">
+                <div class="icon-circle-bg">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="#5f259f">
+                        <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                    </svg>
+                </div>
+                <span>Game Pay</span>
+            </div>
+
+            <!-- Box 3: Exchange Coin -->
+            <div class="action-box" onclick="goToPage('exchange.html')">
+                <div class="icon-circle-bg">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="#5f259f">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+                    </svg>
+                </div>
+                <span>Exchange Coin</span>
+            </div>
+
+            <!-- Box 4: Incoming Soon -->
+            <div class="action-box disabled-box" onclick="showPopup('info', 'Coming Soon', 'This exciting feature is currently under development and will be live in your central wallet very soon!')">
+                <span class="coming-soon-badge">Soon</span>
+                <div class="icon-circle-bg">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#888888">
+                        <path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2h-12zm10 14.5V20H8v-3.5l4-4 4 4zM8 4h8v3.5l-4 4-4-4V4z"/>
+                    </svg>
+                </div>
+                <span>Incoming Soon</span>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="footer-nav">
-    <button class="nav-btn active"><span style="font-size:18px">🏠</span><span>Home</span></button>
-    <button class="nav-btn" onclick="location.href='search.html'"><span style="font-size:18px">🔍</span><span>Search</span></button>
-    <button class="nav-btn" onclick="location.href='alerts.html'"><span style="font-size:18px">🔔</span><span>Alerts</span></button>
-    <button class="nav-btn" onclick="location.href='history.html'"><span style="font-size:18px">📜</span><span>History</span></button>
-</div>
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="changeTab(this, 'home')">
+            <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="handleBottomNavClick('Search')">
+            <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+            <span>Search</span>
+        </div>
+        <div class="nav-item" onclick="handleBottomNavClick('Pay')">
+            <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M4 4h7v7H4zm2 2v3h3V6zm0 7h7v7H4zm2 2v3h3v-3zm7-11h7v7h-7zm2 2v3h3V6zm0 7h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm2-2h2v-2h-2zm0-2h2v-2h-2zm2 2h2v-2h-2z"/></svg></div>
+            <span>Pay</span>
+        </div>
+        <div class="nav-item" onclick="handleBottomNavClick('Alert')">
+            <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 4.36 6 6.92 6 10v5l-2 2v1h16v-1l-2-2z"/></svg></div>
+            <span>Alert</span>
+        </div>
+        <div class="nav-item" onclick="handleBottomNavClick('History')">
+            <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
+            <span>History</span>
+        </div>
+    </div>
 
-<script>
-// ⚡ Your Live Render Server Link
-const API_URL = "https://central-wallet-game-api.onrender.com";
+    <!-- Premium Custom Popup Container -->
+    <div id="custom-popup" class="popup-overlay">
+        <div class="popup-box">
+            <div id="popup-icon-box" class="popup-icon-container"></div>
+            <div id="popup-title" class="popup-title">Notification</div>
+            <div id="popup-message" class="popup-message">Message details go here.</div>
+            <button class="popup-btn" onclick="closePopup()">OK</button>
+        </div>
+    </div>
+        <script>
+        const API_BASE_URL = "https://onrender.com";
 
-window.onload = async function() {
-    const userUID = localStorage.getItem('user_uid');
-    if (!userUID) {
-        window.location.href = 'index.html';
-        return;
-    }
-    await fetchLiveUserData(userUID);
-};
-
-async function fetchLiveUserData(uid) {
-    try {
-        const response = await fetch(`${API_URL}/api/wallet/balance?uid=${uid}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            // Live Update for n&n Coins
-            document.getElementById('wallet-bal').innerHTML = `${data.nn_balance.toFixed(2)} <span>n&n</span>`;
+        // Live Data Loading Logic from Server / LocalStorage
+        window.addEventListener('DOMContentLoaded', async () => {
+            const userDataString = localStorage.getItem('user_data');
             
-            // Live Update for n&n Alpha Crypto
-            document.getElementById('crypto-bal').innerHTML = `${data.alpha_balance.toFixed(2)} <span>ALPHA</span>`;
-        }
-    } catch (err) {
-        console.error("Dashboard Sync Failed:", err);
-    }
-}
+            if (userDataString) {
+                try {
+                    const localUser = JSON.parse(userDataString);
+                    const userUid = localUser.uid;
 
-</script>
+                    // 1. Show local storage data instantly
+                    if (localUser.firstName) {
+                        document.getElementById('user-name').innerText = localUser.firstName;
+                        document.getElementById('user-letter').innerText = localUser.firstName.charAt(0);
+                    }
+                    if (localUser.uid) document.getElementById('user-uid').innerText = localUser.uid;
+                    if (localUser.balance !== undefined) document.getElementById('user-balance').innerText = `₹${localUser.balance}`;
+
+                    // 2. Fetch fresh live balance from backend server
+                    const response = await fetch(`${API_BASE_URL}/api/user/${userUid}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        const freshData = await response.json();
+                        if (freshData.success && freshData.user) {
+                            document.getElementById('user-balance').innerText = `₹${freshData.user.balance}`;
+                            document.getElementById('user-name').innerText = freshData.user.firstName;
+                            document.getElementById('user-letter').innerText = freshData.user.firstName.charAt(0);
+                            
+                            localStorage.setItem('user_data', JSON.stringify(freshData.user));
+                        }
+                    }
+                } catch (e) {
+                    console.log("Direct server fetch failed, showing local data instead.", e);
+                }
+            } else {
+                fallbackToDefault();
+            }
+        });
+
+        function fallbackToDefault() {
+            document.getElementById('user-name').innerText = "Gamer";
+            document.getElementById('user-letter').innerText = "G";
+            document.getElementById('user-uid').innerText = "000000";
+            document.getElementById('user-balance').innerText = "₹0";
+        }
+
+        function goToPage(pageName) {
+            window.location.href = pageName;
+        }
+
+        function changeTab(element, tabName) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Beautiful English Popups for Bottom Nav Items
+        function handleBottomNavClick(menuName) {
+            showPopup('info', menuName, `The ${menuName} section is coming soon. We are currently working on this feature!`);
+        }
+
+        // Custom Beautiful Popup Trigger Function
+        function showPopup(type, title, message) {
+            const popup = document.getElementById('custom-popup');
+            const iconBox = document.getElementById('popup-icon-box');
+            const titleEl = document.getElementById('popup-title');
+            const msgEl = document.getElementById('popup-message');
+            
+            if(type === 'success') {
+                iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#12b76a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+            } else {
+                iconBox.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="#5f259f"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+            }
+            
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            popup.classList.add('active');
+        }
+
+        function closePopup() {
+            document.getElementById('custom-popup').classList.remove('active');
+        }
+    </script>
 </body>
 </html>
