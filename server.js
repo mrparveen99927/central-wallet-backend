@@ -318,6 +318,34 @@ newTransactionLog.transferId = realTransferID;
         });
     }
 });
+// --- ADMIN PANEL API: TRACK PAYMENT BY UTR ---
+app.get('/api/admin/track-utr', async (req, res) => {
+    try {
+        const { utrNumber } = req.query;
+
+        if (!utrNumber) {
+            return res.status(400).json({ success: false, message: "UTR Number is required for tracking." });
+        }
+
+        //   messages     UTR   
+        const transaction = await Message.findOne({ utr: utrNumber });
+
+        if (!transaction) {
+            return res.status(404).json({ success: false, message: "No transaction found with this UTR Number. Invalid or Fake!" });
+        }
+
+        //            
+        res.status(200).json({
+            success: true,
+            message: "Transaction verified successfully.",
+            data: transaction
+        });
+
+    } catch (error) {
+        console.error("Admin UTR Tracking Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error during tracking." });
+    }
+});
 
 // ==========================================
 // 5.B LIVE CHAT & TRANSACTION HISTORY FETCH API
