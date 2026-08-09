@@ -197,6 +197,7 @@ async function handleLogin() {
             localStorage.setItem('user_gmail', result.user.gmail);
             
             showCustomPopup('Welcome Back!', 'Login successful. Session secured.', '#06d6a0');
+            document.querySelector('.popup-btn').setAttribute('onclick', "window.location.href='dashboard.html'");
         } else {
             showCustomPopup('Authentication Failed', result.message, '#e63946');
         }
