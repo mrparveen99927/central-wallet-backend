@@ -285,16 +285,25 @@ app.post('/api/wallet/transfer', async (req, res) => {
         //         
         await sender.save();
         await receiver.save();
-const realUTR = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+
+        //   UTR  Transfer ID  
+        const realUTR = Math.floor(100000000000 + Math.random() * 900000000000).toString();
         const realTransferID = "TXN-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        //    :         
         newTransactionLog.utr = realUTR;
-newTransactionLog.transferId = realTransferID;
+        newTransactionLog.transferId = realTransferID;
 
         //  :        'Successful'    
         newTransactionLog.status = 'Successful';
+        
+        //                  
+        newTransactionLog.set('utr', realUTR, { strict: false });
+        newTransactionLog.set('transferId', realTransferID, { strict: false });
+        
         await newTransactionLog.save();
 
-        //      
+        //       (   )
         return res.status(200).json({
             success: true,
             message: "Transaction completed successfully.",
@@ -303,7 +312,6 @@ newTransactionLog.transferId = realTransferID;
 
     } catch (error) {
         console.error("block    :", error);
-        
         //              'Failed'  
         newTransactionLog.status = 'Failed';
         try {
@@ -311,13 +319,13 @@ newTransactionLog.transferId = realTransferID;
         } catch (dbErr) {
             console.log("      :", dbErr);
         }
-        
-        return res.status(500).json({ 
-            success: false, 
-            message: "Transaction failed due to internal connection drop." 
+        return res.status(500).json({
+            success: false,
+            message: "Transaction failed due to internal connection drop."
         });
     }
 });
+
 // --- ADMIN PANEL API: TRACK PAYMENT BY UTR ---
 app.get('/api/admin/track-utr', async (req, res) => {
     try {
