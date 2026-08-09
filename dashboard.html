@@ -114,27 +114,21 @@ window.onload = async function() {
 
 async function fetchLiveUserData(uid) {
     try {
-        const userName = localStorage.getItem('user_name');
-        if (userName) {
-            document.getElementById('user-logo').innerText = userName.charAt(0).toUpperCase();
-        }
-
-        // Fetch live balance from Render server
         const response = await fetch(`${API_URL}/api/wallet/balance?uid=${uid}`);
         const data = await response.json();
         
         if (data.success) {
-            // Update n&n Coins balance
-            document.getElementById('wallet-bal').innerHTML = `${data.balance.toFixed(2)} <span>n&n</span>`;
+            // Live Update for n&n Coins
+            document.getElementById('wallet-bal').innerHTML = `${data.nn_balance.toFixed(2)} <span>n&n</span>`;
             
-            // Logic for Crypto display (Dynamic based on user holdings)
-            // Currently set as a placeholder for n&n Alpha or exchanged crypto
-            document.getElementById('crypto-bal').innerHTML = `0.00 <span>TON</span>`;
+            // Live Update for n&n Alpha Crypto
+            document.getElementById('crypto-bal').innerHTML = `${data.alpha_balance.toFixed(2)} <span>ALPHA</span>`;
         }
     } catch (err) {
-        console.error("Sync Error:", err);
+        console.error("Dashboard Sync Failed:", err);
     }
 }
+
 </script>
 </body>
 </html>

@@ -6,9 +6,8 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 // ==========================================
-// 1. डेटाबेस का ढांचा (MONGODB SCHEMA / MODEL)
+// UPDATED DATABASE SCHEMA (n&n Coins & Alpha)
 // ==========================================
 const UserSchema = new mongoose.Schema({
     uid: { type: String, unique: true, required: true },
@@ -17,8 +16,16 @@ const UserSchema = new mongoose.Schema({
     gmail: { type: String, required: true, unique: true, trim: true, lowercase: true },
     mobile: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
-    invite_code: { type: String, trim: true, uppercase: true },
-    wallet_balance: { type: Number, default: 0 }, // इन-गेम वर्चुअल कॉइन्स
+    
+    // 🪙 n&n Wallet Coins (Direct deposits & Game play)
+    nn_wallet_balance: { type: Number, default: 0 },
+    
+    // 🚀 n&n Alpha Crypto (Mining rewards & Exchanged tokens)
+    nn_alpha_balance: { type: Number, default: 0 },
+    
+    // 🤖 Bot Mining Balance (Raw rewards before conversion)
+    bot_mining_balance: { type: Number, default: 0 },
+    
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -138,7 +145,7 @@ app.get('/', (req, res) => {
     res.send("Central Wallet Server is Running Successfully without folders!");
 });
 // ==========================================
-// API ROUTE TO FETCH LIVE COIN BALANCE
+// API TO FETCH MULTIPLE WALLET BALANCES
 // ==========================================
 app.get('/api/wallet/balance', async (req, res) => {
     try {
@@ -149,13 +156,16 @@ app.get('/api/wallet/balance', async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
         
+        // Sending all balances to Dashboard
         res.status(200).json({
             success: true,
-            balance: user.wallet_balance
+            nn_balance: user.nn_wallet_balance,
+            alpha_balance: user.nn_alpha_balance,
+            bot_balance: user.bot_mining_balance
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error during balance sync" });
     }
 });
 
