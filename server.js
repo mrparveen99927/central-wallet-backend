@@ -23,11 +23,9 @@ const UserSchema = new mongoose.Schema({
     // 🚀 n&n Alpha Crypto (Mining rewards & Exchanged tokens)
     nn_alpha_balance: { type: Number, default: 0 },
     
-    // 🤖 Bot Mining Balance (Raw rewards before conversion)
-    bot_mining_balance: { type: Number, default: 0 },
-    
+        bot_mining_balance: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now }
-});
+}, { collection: 'users' }); // 🌟 यहाँ मोंगोडीबी को फ़ोर्स किया कि इसी कलेक्शन में डेटा जाए!
 
 const User = mongoose.model('User', UserSchema);
 
