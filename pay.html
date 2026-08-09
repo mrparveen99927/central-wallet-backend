@@ -439,31 +439,33 @@
             });
         });
 
-        // 🔴 सर्वर से असली हिस्ट्री खींचकर स्क्रीन पर छापने का मुख्य फंक्शन 🔴
         async function fetchRealTimeChatHistoryFromServer(myUid, targetUid) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/chat/history?senderUid=${myUid}&receiverUid=${targetUid}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-                const streamBox = document.getElementById('chat-stream-box');
-                streamBox.innerHTML = ""; 
-
-                if (response.ok && data.success && data.history.length > 0) {
-                    data.history.forEach(log => {
-                        const direction = log.senderUid === myUid ? 'sent' : 'received';
-                        const logTime = new Date(log.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                        appendMessageBubbleToStream(log.content, log.type, direction, logTime);
-                    });
-                } else {
-                    streamBox.innerHTML = '<div class="chat-date-divider"><span>No past transactions found. Start a conversation!</span></div>';
-                }
-            } catch (error) {
-                console.error("History fetch failed:", error);
-            }
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/chat/history?senderUid=${myUid}&receiverUid=${targetUid}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        const streamBox = document.getElementById('chat-stream-box');
+        streamBox.innerHTML = "";
+        
+        if (response.ok && data.success && data.history.length > 0) {
+            data.history.forEach(log => {
+                // यहाँ चेक हो रहा है कि मैसेज भेजा गया है या मिला है
+                const direction = log.senderUid === myUid ? 'sent' : 'received';
+                const logTime = new Date(log.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                
+                // सही टाइप (text या payment) के साथ स्क्रीन पर दिखाना
+                appendMessageBubbleToStream(log.content, log.type, direction, logTime);
+            });
+        } else {
+            streamBox.innerHTML = '<div class="chat-date-divider"><span>No past transactions found. Start a conversation!</span></div>';
         }
+    } catch (error) {
+        console.error("इतिहास लोड करने में एरर:", error);
+    }
+}
+
 
         // 🛠️ pay.html के भाग 3A में केवल इस एक फंक्शन को रीप्लेस (Replace) करें भाई
 async function processConsoleAction() {
@@ -577,17 +579,35 @@ async function processConsoleAction() {
             }
         }
 
-        function finalizeLocalPaymentSuccess(myUser) {
-            closeMpinSheetPopup();
-            
-            myUser.balance = myUser.balance - activePayAmount;
-            localStorage.setItem('user_data', JSON.stringify(myUser));
+        async function finalizeLocalPaymentSuccess(myUser) {
+    closeMpinSheetPopup();
+    
+    // लोकल बैलेंस अपडेट करना
+    myUser.balance = myUser.balance - activePayAmount;
+    localStorage.setItem('user_data', JSON.stringify(myUser));
+    
+    // स्क्रीन पर तुरंत दिखाना
+    appendMessageBubbleToStream(activePayAmount, 'payment', 'sent');
+    document.getElementById('console-input').value = "";
 
-            appendMessageBubbleToStream(activePayAmount, 'payment', 'sent');
-            document.getElementById('console-input').value = "";
-            
-            showStatusPopup('Transfer Successful', `Successfully transferred ₹${activePayAmount} to ${currentTargetUser.firstName || currentTargetUser.name} instantly.`, 'success');
-        }
+    // 🟢 यहाँ सुधार है: पैसे कटने के बाद इसे डेटाबेस (Server) में भी सेव करें
+    try {
+        await fetch(`${API_BASE_URL}/api/chat/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                senderUid: myUser.uid,
+                receiverUid: currentTargetUser.uid,
+                type: 'payment', // यह ट्रांजेक्शन लॉग है
+                content: activePayAmount.toString()
+            })
+        });
+    } catch (error) {
+        console.log("डेटाबेस में ट्रांजेक्शन सेव करने में विफल:", error);
+    }
+
+    showStatusPopup('Transfer Successful', `Successfully transferred ₹${activePayAmount} to ${currentTargetUser.firstName || currentTargetUser.name} instantly.`, 'success');
+}
 
         // चैट बॉक्स में नया संदेश या पेमेंट का गुब्बारा जोड़ना
         function appendMessageBubbleToStream(content, type, direction, customTime = null) {
