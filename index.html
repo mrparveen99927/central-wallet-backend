@@ -272,9 +272,11 @@
             <button class="popup-btn" onclick="closePopup()">OK</button>
         </div>
     </div>
-        <script>
+            <script>
+        //     
         const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
 
+        //          
         function toggleForm(target) {
             const loginBox = document.getElementById('login-box');
             const registerBox = document.getElementById('register-box');
@@ -287,6 +289,7 @@
             }
         }
 
+        //    -   
         function showPopup(type, title, message, callback = null) {
             const popup = document.getElementById('custom-popup');
             const iconBox = document.getElementById('popup-icon-box');
@@ -304,6 +307,7 @@
             window.popupCallback = callback;
         }
 
+        // -    
         function closePopup() {
             document.getElementById('custom-popup').classList.remove('active');
             if (window.popupCallback) {
@@ -312,54 +316,57 @@
             }
         }
 
-        //            
+        //  100%       
         async function handleLogin(event) {
             event.preventDefault();
+            
+            //        
             const identifier = document.getElementById('login-identifier').value;
-            const password = document.getElementById('login-password').value;
+            const loginPasswordInput = document.getElementById('login-password').value;
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ identifier, password })
+                    body: JSON.stringify({ identifier, password: loginPasswordInput })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    //       :
+                    //        (user  data)   
                     let rawUser = data.user || data.data || data; 
-                    
-                    //      
                     if (rawUser && (rawUser.user || rawUser.data)) {
                         rawUser = rawUser.user || rawUser.data;
                     }
 
-                    //     'firstName'        
+                    //    -   
                     const cleanUser = {
                         firstName: rawUser.firstName || rawUser.name || "Parveen", 
                         uid: rawUser.uid || "999278",
                         balance: rawUser.balance !== undefined ? rawUser.balance : 0
                     };
 
-                    showPopup('success', 'Login Successful', `Welcome back, ${cleanUser.firstName}! Your current balance is ${cleanUser.balance}. Redirecting...`, () => {
-                        //     100%    
+                    //  -        
+                    showPopup('success', 'Login Successful', `Welcome back, ${cleanUser.firstName}! Redirecting...`, () => {
+                        // 1.       
                         localStorage.setItem('user_data', JSON.stringify(cleanUser));
-                        //             
-localStorage.setItem('wallet_pass_lock', loginPasswordInput);
-
+                        
+                        // 2.             
+                        localStorage.setItem('wallet_pass_lock', loginPasswordInput);
+                        
+                        // 3.       
                         window.location.href = "dashboard.html"; 
                     });
                 } else {
-                    showPopup('error', 'Login Failed', data.message);
+                    showPopup('error', 'Login Failed', data.message || 'Invalid UID, Mobile or Password.');
                 }
             } catch (error) {
                 showPopup('error', 'Server Error', 'Could not connect to the server. Please try again later.');
             }
         }
 
-        //  
+        //       
         async function handleRegister(event) {
             event.preventDefault();
             const firstName = document.getElementById('reg-firstname').value;
@@ -371,7 +378,7 @@ localStorage.setItem('wallet_pass_lock', loginPasswordInput);
             const referralCode = document.getElementById('reg-referral').value;
 
             if (password !== confirmPassword) {
-                showPopup('error', 'Registration Failed', 'Passwords do not match.');
+                showPopup('error', 'Registration Failed', 'Passwords do not match. Please try again.');
                 return;
             }
 
@@ -386,15 +393,16 @@ localStorage.setItem('wallet_pass_lock', loginPasswordInput);
 
                 if (data.success) {
                     showPopup('success', 'Account Created', `Congratulations! Your account is ready. Your unique Login UID is: ${data.data.uid}.`, () => {
-                        toggleForm('login');
+                        toggleForm('login'); //         
                     });
                 } else {
-                    showPopup('error', 'Registration Failed', data.message);
+                    showPopup('error', 'Registration Failed', data.message || 'Mobile or Email already exists.');
                 }
             } catch (error) {
                 showPopup('error', 'Server Error', 'Could not connect to the server.');
             }
         }
     </script>
+    
 </body>
 </html>
