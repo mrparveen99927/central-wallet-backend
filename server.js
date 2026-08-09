@@ -4,6 +4,19 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+// --- UNIQUE ID GENERATORS START ---
+const crypto = require('crypto');
+
+// This function creates a 12-digit random UTR number
+function generateUTR() {
+    return Math.floor(100000000000 + Math.random() * 900000000000).toString();
+}
+
+// This function creates a random Transfer ID starting with TXN-
+function generateTransferID() {
+    return "TXN-" + crypto.randomBytes(4).toString('hex').toUpperCase();
+}
+// --- UNIQUE ID GENERATORS END ---
 
 // ==========================================
 // 1. MIDDLEWARES (       )
@@ -237,81 +250,113 @@ app.get('/api/user/search', async (req, res) => {
 });
 
 
-// API 4:       (100%    )
+// NEW TRANSFER API WITH UTR & TRANSFER ID
 app.post('/api/wallet/transfer', async (req, res) => {
-    // 1.            'Processing'    
-    const newTransactionLog = new Message({
-        senderUid: req.body.senderUid,
-        receiverUid: req.body.receiverUid,
-        type: 'payment',
-        content: req.body.amount ? req.body.amount.toString() : "0",
-        status: 'Processing' //       
-    });
-
     try {
         const { senderUid, receiverUid, amount } = req.body;
+        const transferAmount = Number(amount);
 
-        //   1:         ?
-        if (!senderUid || !receiverUid || !amount || Number(amount) <= 0) {
-            newTransactionLog.status = 'Failed';
-            await newTransactionLog.save();
-            return res.status(400).json({ success: false, message: "Invalid parameters or amount." });
+        // Validation: Check if amount is valid
+        if (!senderUid || !receiverUid || transferAmount <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid transaction details." });
         }
 
-        //           
+        // Fetch both users from MongoDB
         const sender = await User.findOne({ uid: senderUid });
         const receiver = await User.findOne({ uid: receiverUid });
 
-        //   2:         ?
-        if (!sender || !receiver) {
-            newTransactionLog.status = 'Failed';
-            await newTransactionLog.save();
-            return res.status(444).json({ success: false, message: "Sender or Receiver wallet account not found." });
+        // Check balance and user existence
+        if (!sender || !receiver || sender.balance < transferAmount) {
+            return res.status(400).json({ success: false, message: "Insufficient balance or user not found." });
         }
 
-        //   3:          ?
-        const transferAmount = Number(amount);
-        if (sender.balance < transferAmount) {
-            newTransactionLog.status = 'Failed';
-            await newTransactionLog.save();
-            return res.status(400).json({ success: false, message: "Declined: Insufficient wallet balance." });
-        }
+        // GENERATE UNIQUE IDs
+        const finalUTR = generateUTR();
+        const finalTransferID = generateTransferID();
 
-        //     :
-        //                
-        sender.balance = sender.balance - transferAmount;
-        receiver.balance = receiver.balance + transferAmount;
+        // UPDATE BALANCES
+        sender.balance -= transferAmount;
+        receiver.balance += transferAmount;
 
-        //         
         await sender.save();
         await receiver.save();
 
-        //  :        'Successful'    
-        newTransactionLog.status = 'Successful';
-        await newTransactionLog.save();
+        // LOG TRANSACTION INTO MESSAGES COLLECTION
+        const newTransaction = new Message({
+            senderUid: senderUid,
+            receiverUid: receiverUid,
+            type: 'payment',
+            content: transferAmount.toString(),
+            utr: finalUTR,
+            transferId: finalTransferID,
+            status: 'Successful',
+            createdAt: new Date()
+        });
 
-        //      
-        return res.status(200).json({
+        await newTransaction.save();
+
+        // SEND SUCCESS RESPONSE TO FRONTEND
+        res.status(200).json({
             success: true,
-            message: "Transaction completed successfully.",
-            data: newTransactionLog
+            message: "Transaction Successful",
+            utr: finalUTR,
+            transferId: finalTransferID,
+            amount: transferAmount
         });
 
     } catch (error) {
-        console.error("block    :", error);
-        
-        //              'Failed'  
-        newTransactionLog.status = 'Failed';
-        try {
-            await newTransactionLog.save();
-        } catch (dbErr) {
-            console.log("      :", dbErr);
+        console.error("Critical Transfer Error:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+// --- NEW V2 API ROUTE (Add this at the end of your routes) ---
+app.post('/api/wallet/transfer-v2', async (req, res) => {
+    try {
+        const { senderUid, receiverUid, amount } = req.body;
+        const transferAmount = Number(amount);
+
+        // Fetch users from MongoDB
+        const sender = await User.findOne({ uid: senderUid });
+        const receiver = await User.findOne({ uid: receiverUid });
+
+        if (!sender || !receiver || sender.balance < transferAmount) {
+            return res.status(400).json({ success: false, message: "Transaction Failed: Check balance or User UID." });
         }
-        
-        return res.status(500).json({ 
-            success: false, 
-            message: "Transaction failed due to internal connection drop." 
+
+        // GENERATE UNIQUE IDs (using functions you added at the top)
+        const finalUTR = generateUTR();
+        const finalTransferID = generateTransferID();
+
+        // Perform balance transfer
+        sender.balance -= transferAmount;
+        receiver.balance += transferAmount;
+
+        await sender.save();
+        await receiver.save();
+
+        // Log transaction with UTR and Transfer ID
+        const newTransaction = new Message({
+            senderUid: senderUid,
+            receiverUid: receiverUid,
+            type: 'payment',
+            content: transferAmount.toString(),
+            utr: finalUTR,
+            transferId: finalTransferID,
+            status: 'Successful',
+            createdAt: new Date()
         });
+
+        await newTransaction.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Success",
+            utr: finalUTR,
+            transferId: finalTransferID
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 
