@@ -320,6 +320,27 @@
             justify-content: center;
             align-items: center;
         }
+        /* Processing स्टेटस के लिए पीला रंग */
+.payment-card.pay-status-processing {
+    border-left: 4px solid #ffc107 !important;
+    background: #fffdf5;
+}
+.payment-card.pay-status-processing .status-badge-icon {
+    color: #ffc107;
+}
+
+/* Failed स्टेटस के लिए लाल रंग */
+.payment-card.pay-status-failed {
+    border-left: 4px solid #dc3545 !important;
+    background: #fdf2f2;
+}
+.payment-card.pay-status-failed .status-badge-icon {
+    color: #dc3545;
+}
+.payment-card.pay-status-failed .payment-status-label {
+    color: #dc3545 !important;
+}
+
     </style>
 </head>
 <body>
@@ -598,33 +619,53 @@ async function processConsoleAction() {
     showStatusPopup('Transfer Successful', `Successfully transferred ₹${activePayAmount} to ${currentTargetUser.firstName || currentTargetUser.name} instantly.`, 'success');
 }
 
-        // चैट बॉक्स में नया संदेश या पेमेंट का गुब्बारा जोड़ना
-        function appendMessageBubbleToStream(content, type, direction, customTime = null) {
-            const streamBox = document.getElementById('chat-stream-box');
-            const bubble = document.createElement('div');
-            bubble.className = `msg-bubble msg-${direction}`;
+        function appendMessageBubbleToStream(content, type, direction, timeStr = "", status = 'Successful') {
+    const streamBox = document.getElementById('chat-stream-box');
+    const bubbleWrapper = document.createElement('div');
+    bubbleWrapper.className = `chat-bubble-row ${direction === 'sent' ? 'align-right' : 'align-left'}`;
+    
+    if (!timeStr) {
+        timeStr = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
 
-            const timeStr = customTime ? customTime : new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    if (type === 'text') {
+        bubbleWrapper.innerHTML = `
+            <div class="text-bubble ${direction}">
+                <p>${content}</p>
+                <span class="bubble-time">${timeStr}</span>
+            </div>
+        `;
+    } else if (type === 'payment') {
+        // 🎨 स्टेटस के आधार पर क्लास और टेक्स्ट तय करना
+        let statusText = `${direction.toUpperCase()} SUCCESSFUL`;
+        let statusClass = `pay-status-${status.toLowerCase()}`; // pay-status-successful, pay-status-processing, pay-status-failed
+        let icon = '✓';
 
-            if (type === 'payment') {
-                const iconColor = direction === 'sent' ? '#5f259f' : '#12b76a';
-                const statusTitle = direction === 'sent' ? 'Sent Successful' : 'Received Successful';
-
-                bubble.innerHTML = `
-                    <div class="tx-card-content">
-                        <svg viewBox="0 0 24 24" fill="${iconColor}"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        <span class="tx-amount" style="color: ${iconColor};">₹${content}</span>
-                    </div>
-                    <div class="tx-status-text" style="color: ${iconColor};">${statusTitle}</div>
-                    <span class="msg-time">${timeStr}</span>
-                `;
-            } else {
-                bubble.innerHTML = `${content}<span class="msg-time">${timeStr}</span>`;
-            }
-
-            streamBox.appendChild(bubble);
-            streamBox.scrollTop = streamBox.scrollHeight;
+        if (status === 'Processing') {
+            statusText = 'PROCESSING...';
+            icon = '⏳';
+        } else if (status === 'Failed') {
+            statusText = 'TRANSACTION FAILED';
+            icon = '✕';
         }
+
+        bubbleWrapper.innerHTML = `
+            <div class="payment-card ${direction} ${statusClass}">
+                <div class="payment-card-body">
+                    <span class="status-badge-icon">${icon}</span>
+                    <span class="payment-amount-text">₹${content}</span>
+                </div>
+                <div class="payment-card-footer">
+                    <span class="payment-status-label">${statusText}</span>
+                    <span class="bubble-time">${timeStr}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    streamBox.appendChild(bubbleWrapper);
+    streamBox.scrollTop = streamBox.scrollHeight; // ऑटो स्क्रॉल नीचे की तरफ
+}
 
         function showStatusPopup(title, message, type) {
             const popup = document.getElementById('status-popup');
