@@ -5,164 +5,135 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Central Wallet - Dashboard</title>
 <style>
+/* 100% Local Styles - No External Links */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-body { background: #000000; color: #ffffff; padding-bottom: 70px; display: flex; justify-content: center; min-height: 100vh; }
-.dashboard-container { width: 100%; max-width: 450px; background: #000000; padding: 14px; position: relative; }
+body { background: #000000; color: #ffffff; padding-bottom: 80px; display: flex; justify-content: center; min-height: 100vh; }
+.container { width: 100%; max-width: 450px; background: #000000; padding: 15px; position: relative; }
 
-/* 👤 Top Navigation Bar */
-.top-nav { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; margin-bottom: 12px; }
-.profile-trigger { width: 38px; height: 38px; background: #9d4edd; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; cursor: pointer; font-size: 16px; border: 2px solid #222; }
-.app-title { font-size: 16px; font-weight: bold; letter-spacing: 0.5px; }
+/* Top Header */
+.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 10px; }
+.app-name { font-size: 18px; font-weight: bold; color: #9d4edd; letter-spacing: 1px; }
+.profile-icon { width: 38px; height: 38px; background: #9d4edd; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 2px solid #222; font-size: 16px; }
 
-/* 📺 Advertisement Banner */
-.ad-banner { width: 100%; height: 65px; background: #121212; border: 1px dashed #334155; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: #64748b; font-size: 11px; font-weight: bold; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+/* Ad Banner */
+.ad-box { width: 100%; height: 65px; background: #121212; border: 1px dashed #334155; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: #475569; font-size: 11px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; }
 
-/* 🪙 Dual Split Balance Cards (Side-by-Side) */
+/* Dual Balance Row (Side-by-Side Cards) */
 .balance-row { display: flex; gap: 10px; margin-bottom: 20px; }
-.balance-card { flex: 1; background: #121212; border: 1px solid #1c1c1c; padding: 12px; border-radius: 14px; text-align: left; }
-.balance-card p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.balance-card h2 { font-size: 18px; color: #ffffff; font-weight: bold; display: flex; align-items: baseline; gap: 4px; }
-.balance-card h2 span { color: #9d4edd; font-size: 12px; font-weight: bold; }
+.card { flex: 1; background: #121212; border: 1px solid #1c1c1c; padding: 14px; border-radius: 14px; text-align: left; }
+.card p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.card h2 { font-size: 18px; color: #ffffff; font-weight: bold; display: flex; align-items: baseline; gap: 4px; }
+.card h2 span { color: #9d4edd; font-size: 12px; font-weight: bold; }
 
-/* 🎛️ 4 Main Action Boxes (Smaller Grid Layout) */
-.grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.action-box { background: #121212; border: 1px solid #1c1c1c; padding: 14px 10px; border-radius: 14px; text-align: center; cursor: pointer; transition: 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 85px; }
-.action-box:hover { border-color: #9d4edd; background: #161616; }
-.box-icon { font-size: 20px; }
-.box-title { font-size: 12px; font-weight: bold; color: #fff; letter-spacing: 0.5px; }
+/* Feature Grid */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.box { background: #121212; border: 1px solid #1c1c1c; padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.2s; min-height: 90px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
+.box:hover { border-color: #9d4edd; background: #161616; }
+.icon { font-size: 22px; }
+.label { font-size: 12px; font-weight: bold; color: #fff; }
 
-/* 🧭 Fixed Bottom Navigation Bar */
-.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: #121212; border-top: 1px solid #1c1c1c; display: flex; justify-content: space-around; padding: 10px 0; z-index: 999; }
-.nav-item { background: none; border: none; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 10px; font-weight: bold; width: 20%; text-transform: uppercase; }
-.nav-item.active { color: #9d4edd; }
-.nav-icon { font-size: 16px; }
+/* Fixed Bottom Nav */
+.footer-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: #121212; border-top: 1px solid #1c1c1c; display: flex; justify-content: space-around; padding: 12px 0; z-index: 999; }
+.nav-btn { background: none; border: none; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 10px; font-weight: bold; text-transform: uppercase; width: 20%; }
+.nav-btn.active { color: #9d4edd; }
 </style>
 </head>
 <body>
 
-<div class="dashboard-container">
-    <!-- 👤 Top Navigation Bar -->
-    <div class="top-nav">
-        <div class="app-title">CENTRAL WALLET</div>
-        <div class="profile-trigger" onclick="navigateTo('profile.html')">U</div>
+<div class="container">
+    <!-- Header with Original Branding -->
+    <div class="header">
+        <div class="app-name">CENTRAL WALLET</div>
+        <div class="profile-icon" id="user-logo" onclick="location.href='profile.html'">U</div>
     </div>
 
-    <!-- 📺 Advertisement Banner -->
-    <div class="ad-banner">
-        Advertisement Banner Space
-    </div>
+    <div class="ad-box">ADVERTISEMENT BANNER</div>
 
-    <!-- 🪙 Dual Split Balance Row -->
+    <!-- Dual Balance Display -->
     <div class="balance-row">
-        <!-- Left Side: Live Game Coins from MongoDB -->
-        <div class="balance-card">
-            <p>Game Balance</p>
-            <h2 id="coin-balance">0.00 <span>COINS</span></h2>
+        <!-- Left: n&n Wallet Coins -->
+        <div class="card">
+            <p>n&n Balance</p>
+            <h2 id="wallet-bal">0.00 <span>n&n</span></h2>
         </div>
-        
-        <!-- Right Side: Future Crypto Token Placeholder -->
-        <div class="balance-card">
-            <p>Crypto Balance</p>
-            <h2 id="crypto-balance">0.00 <span>XYZ</span></h2>
+        <!-- Right: Dynamic Crypto (TON/USDT/Alpha) -->
+        <div class="card">
+            <p id="crypto-label">Crypto Balance</p>
+            <h2 id="crypto-bal">0.00 <span id="crypto-symbol">XYZ</span></h2>
         </div>
     </div>
 
-    <!-- 🎛️ 4 Smaller Grid Action Boxes -->
-    <div class="grid-container">
-        <!-- Box 1: Phone / UPI Pay -->
-        <div class="action-box" onclick="navigateTo('upi-pay.html')">
-            <div class="box-icon">📱</div>
-            <div class="box-title">Phone / UPI Pay</div>
+    <!-- Grid Features -->
+    <div class="grid">
+        <div class="box" onclick="location.href='p2p.html'">
+            <div class="icon">📱</div>
+            <div class="label">P2P Transfer</div>
         </div>
-        
-        <!-- Box 2: Game Pay -->
-        <div class="action-box" onclick="navigateTo('game-pay.html')">
-            <div class="box-icon">🎮</div>
-            <div class="box-title">Game Pay</div>
+        <div class="box" onclick="location.href='game-pay.html'">
+            <div class="icon">🎮</div>
+            <div class="label">Game Pay</div>
         </div>
-
-        <!-- Box 3: Deposit Cash -->
-        <div class="action-box" onclick="navigateTo('deposit.html')">
-            <div class="box-icon">💵</div>
-            <div class="box-title">Deposit Cash</div>
+        <div class="box" onclick="location.href='deposit.html'">
+            <div class="icon">➕</div>
+            <div class="label">Deposit</div>
         </div>
-
-        <!-- Box 4: Withdraw Cash -->
-        <div class="action-box" onclick="navigateTo('withdraw.html')">
-            <div class="box-icon">🏛️</div>
-            <div class="box-title">Withdraw Cash</div>
+        <div class="box" onclick="location.href='withdraw.html'">
+            <div class="icon">➖</div>
+            <div class="label">Withdraw</div>
+        </div>
+        <div class="box" onclick="location.href='swap-ton.html'">
+            <div class="icon">🔄</div>
+            <div class="label">Swap to TON</div>
+        </div>
+        <div class="box" onclick="location.href='swap-usdt.html'">
+            <div class="icon">💵</div>
+            <div class="label">Swap to USDT</div>
         </div>
     </div>
 </div>
 
-<!-- 🧭 Fixed Bottom Navigation Bar -->
-<div class="bottom-nav">
-    <button class="nav-item active" onclick="navigateTo('dashboard.html')">
-        <span class="nav-icon">🏠</span>
-        <span>Home</span>
-    </button>
-    <button class="nav-item" onclick="navigateTo('search.html')">
-        <span class="nav-icon">🔍</span>
-        <span>Search</span>
-    </button>
-    <button class="nav-item" onclick="navigateTo('alerts.html')">
-        <span class="nav-icon">🔔</span>
-        <span>Alerts</span>
-    </button>
-    <button class="nav-item" onclick="navigateTo('history.html')">
-        <span class="nav-icon">📜</span>
-        <span>History</span>
-    </button>
+<div class="footer-nav">
+    <button class="nav-btn active"><span style="font-size:18px">🏠</span><span>Home</span></button>
+    <button class="nav-btn" onclick="location.href='search.html'"><span style="font-size:18px">🔍</span><span>Search</span></button>
+    <button class="nav-btn" onclick="location.href='alerts.html'"><span style="font-size:18px">🔔</span><span>Alerts</span></button>
+    <button class="nav-btn" onclick="location.href='history.html'"><span style="font-size:18px">📜</span><span>History</span></button>
 </div>
 
 <script>
-// Live Render Server URL
+// ⚡ Your Live Render Server Link
 const API_URL = "https://central-wallet-game-api.onrender.com";
 
-// Automatically execute database sync on load
 window.onload = async function() {
-    const uid = localStorage.getItem('user_uid');
-    
-    // Protection: Bounce back to login if session missing
-    if (!uid) {
-        window.location.href = "index.html";
+    const userUID = localStorage.getItem('user_uid');
+    if (!userUID) {
+        window.location.href = 'index.html';
         return;
     }
-    
-    await fetchLiveUserData(uid);
+    await fetchLiveUserData(userUID);
 };
 
-// Sync live profile info and coins from MongoDB
 async function fetchLiveUserData(uid) {
     try {
-        const name = localStorage.getItem('user_name');
-        if (name) {
-            document.querySelector('.profile-trigger').innerText = name.charAt(0).toUpperCase();
+        const userName = localStorage.getItem('user_name');
+        if (userName) {
+            document.getElementById('user-logo').innerText = userName.charAt(0).toUpperCase();
         }
 
-        // Hit render API endpoint to get real balance
-        const balanceRes = await fetch(`${API_URL}/api/wallet/balance?uid=${uid}`);
-        const balanceData = await balanceRes.json();
+        // Fetch live balance from Render server
+        const response = await fetch(`${API_URL}/api/wallet/balance?uid=${uid}`);
+        const data = await response.json();
         
-        if (balanceRes.ok && balanceData.success) {
-            document.getElementById('coin-balance').innerHTML = `${balanceData.balance.toFixed(2)} <span>COINS</span>`;
-        } else {
-            document.getElementById('coin-balance').innerHTML = `0.00 <span>COINS</span>`;
+        if (data.success) {
+            // Update n&n Coins balance
+            document.getElementById('wallet-bal').innerHTML = `${data.balance.toFixed(2)} <span>n&n</span>`;
+            
+            // Logic for Crypto display (Dynamic based on user holdings)
+            // Currently set as a placeholder for n&n Alpha or exchanged crypto
+            document.getElementById('crypto-bal').innerHTML = `0.00 <span>TON</span>`;
         }
-
-        // Placeholder for future Crypto token integration
-        document.getElementById('crypto-balance').innerHTML = `0.00 <span>XYZ</span>`;
-
     } catch (err) {
-        console.error("Failed to sync live data from MongoDB:", err);
-        document.getElementById('coin-balance').innerHTML = `0.00 <span>COINS</span>`;
-        document.getElementById('crypto-balance').innerHTML = `0.00 <span>XYZ</span>`;
+        console.error("Sync Error:", err);
     }
-}
-
-// Global UI Navigation Handler
-function navigateTo(pageName) {
-    window.location.href = pageName;
 }
 </script>
 </body>
