@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central Wallet - Auth System</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+body { background: #000000; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+.auth-container { width: 100%; max-width: 400px; background: #121212; padding: 24px; border-radius: 20px; border: 1px solid #1c1c1c; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+.tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #222; }
+.tab-btn { flex: 1; padding: 12px; background: none; border: none; color: #888; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
+.tab-btn.active { color: #9d4edd; border-bottom: 2px solid #9d4edd; }
+.hidden { display: none; }
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 6px; }
+.input-group input { width: 100%; padding: 12px; background: #000000; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 15px; outline: none; }
+.input-group input:focus { border-color: #9d4edd; }
+.row { display: flex; gap: 10px; }
+.submit-btn { width: 100%; padding: 14px; background: #9d4edd; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+.submit-btn:hover { background: #7b2cbf; }
+</style>
+</head>
+<body>
+
+<div class="auth-container">
+    <!-- Tabs For Switch -->
+    <div class="tabs">
+        <button id="login-tab" class="tab-btn active" onclick="switchTab('login')">LOGIN</button>
+        <button id="reg-tab" class="tab-btn" onclick="switchTab('register')">REGISTER</button>
+    </div>
+
+    <!-- Login Section -->
+    <div id="login-section">
+        <div class="input-group">
+            <label>UID, Mobile Number, or Gmail ID</label>
+            <input type="text" id="login-key" placeholder="Enter UID, Mobile or Gmail">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="login-pass" placeholder="Enter your password">
+        </div>
+        <button class="submit-btn" onclick="handleLogin()">Sign In</button>
+    </div>
+
+    <!-- Register Section -->
+    <div id="register-section" class="hidden">
+        <div class="row">
+            <div class="input-group" style="flex: 1;">
+                <label>First Name</label>
+                <input type="text" id="reg-first" placeholder="John">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>Last Name</label>
+                <input type="text" id="reg-last" placeholder="Doe">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Gmail ID</label>
+            <input type="email" id="reg-gmail" placeholder="name@gmail.com">
+        </div>
+        <div class="input-group">
+            <label>10-Digit Mobile Number</label>
+            <input type="text" id="reg-mobile" placeholder="Enter mobile number" maxlength="10">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="reg-pass" placeholder="Create password">
+        </div>
+        <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="reg-cpass" placeholder="Re-enter password">
+        </div>
+        <div class="input-group">
+            <label>Refer / Invite Code (Optional)</label>
+            <input type="text" id="reg-invite" placeholder="e.g. JOHN1234" style="text-transform: uppercase;">
+        </div>
+        <button class="submit-btn" onclick="handleRegister()">Complete Sign Up</button>
+    </div>
+</div>
+
+<script>
+// API URL Config (Render Server Address)
+const API_URL = "http://localhost:3000"; // लोकल टेस्टिंग के लिए 3000, रेंडर पर डालने के बाद बदलेंगे
+
+// Switch Tab Logic
+function switchTab(mode) {
+    const loginSec = document.getElementById('login-section');
+    const regSec = document.getElementById('register-section');
+    const loginTab = document.getElementById('login-tab');
+    const regTab = document.getElementById('reg-tab');
+    
+    if (mode === 'login') {
+        loginSec.classList.remove('hidden');
+        regSec.classList.add('hidden');
+        loginTab.classList.add('active');
+        regTab.classList.remove('active');
+    } else {
+        loginSec.classList.add('hidden');
+        regSec.classList.remove('hidden');
+        loginTab.classList.remove('active');
+        regTab.classList.add('active');
+    }
+}
+
+// Register Handle Logic
+async function handleRegister() {
+    const first_name = document.getElementById('reg-first').value.trim();
+    const last_name = document.getElementById('reg-last').value.trim();
+    const gmail = document.getElementById('reg-gmail').value.trim();
+    const mobile = document.getElementById('reg-mobile').value.trim();
+    const password = document.getElementById('reg-pass').value;
+    const confirm_password = document.getElementById('reg-cpass').value;
+    const invite_code = document.getElementById('reg-invite').value.trim();
+
+    if (!first_name || !gmail || mobile.length !== 10 || !password) {
+        alert("Kripya sabhi jaroori fields ko bharein!");
+        return;
+    }
+    if (password !== confirm_password) {
+        alert("Password aur Confirm Password match nahi ho rhe hain!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ first_name, last_name, gmail, mobile, password, confirm_password, invite_code })
+        });
+        const result = await response.json();
+        
+        if (response.ok || result.success) {
+            alert(`Registration Successful!\nAapka User ID (UID): ${result.uid}`);
+            switchTab('login');
+            document.getElementById('login-key').value = result.uid;
+        } else {
+            alert(`Error: ${result.message}`);
+        }
+    } catch (err) {
+        alert("Registration Fail! Server connect nahi ho pa rha hai.");
+        console.error(err);
+    }
+}
+
+// Login Handle Logic
+async function handleLogin() {
+    const login_key = document.getElementById('login-key').value.trim();
+    const password = document.getElementById('login-pass').value;
+
+    if (!login_key || !password) {
+        alert("Kripya ID aur Password dono bharein!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login_key, password })
+        });
+        const result = await response.json();
+        
+        if (response.ok || result.success) {
+            // User Session Store
+            localStorage.setItem('user_uid', result.user.uid);
+            localStorage.setItem('user_name', `${result.user.first_name} ${result.user.last_name}`);
+            localStorage.setItem('user_mobile', result.user.mobile);
+            localStorage.setItem('user_gmail', result.user.gmail);
+            
+            alert(`Welcome back, ${result.user.first_name}!`);
+            window.location.href = "dashboard.html"; // लॉगिन के बाद डैशबोर्ड पर भेजने के लिए
+        } else {
+            alert(`Error: ${result.message}`);
+        }
+    } catch (err) {
+        alert("Login Error! Server se connect nahi ho pa rha hai.");
+        console.error(err);
+    }
+}
+</script>
+</body>
+</html>

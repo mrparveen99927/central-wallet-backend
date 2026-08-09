@@ -1,0 +1,15 @@
+{
+  "name": "central-wallet-backend",
+  "version": "1.0.0",
+  "description": "Central Wallet with 10 AM to 5 PM Limit",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.3.1",
+    "dotenv": "^16.4.5",
+    "cors": "^2.8.5"
+  }
+}
