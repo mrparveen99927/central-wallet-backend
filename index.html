@@ -346,6 +346,9 @@
                     showPopup('success', 'Login Successful', `Welcome back, ${cleanUser.firstName}! Your current balance is ${cleanUser.balance}. Redirecting...`, () => {
                         //     100%    
                         localStorage.setItem('user_data', JSON.stringify(cleanUser));
+                        //             
+localStorage.setItem('wallet_pass_lock', loginPasswordInput);
+
                         window.location.href = "dashboard.html"; 
                     });
                 } else {
