@@ -1,13 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bcrypt = require('bcryptjs'); // पासवर्ड सुरक्षा के लिए
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 // ==========================================
-// UPDATED DATABASE SCHEMA (n&n Coins & Alpha)
+// 1. DATABASE SCHEMA (Strictly for central_wallet_db)
 // ==========================================
 const UserSchema = new mongoose.Schema({
     uid: { type: String, unique: true, required: true },
@@ -16,145 +18,86 @@ const UserSchema = new mongoose.Schema({
     gmail: { type: String, required: true, unique: true, trim: true, lowercase: true },
     mobile: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
-    
-    // 🪙 n&n Wallet Coins (Direct deposits & Game play)
     nn_wallet_balance: { type: Number, default: 0 },
-    
-    // 🚀 n&n Alpha Crypto (Mining rewards & Exchanged tokens)
     nn_alpha_balance: { type: Number, default: 0 },
-    
-        bot_mining_balance: { type: Number, default: 0 },
+    bot_mining_balance: { type: Number, default: 0 },
+    invite_code: { type: String, trim: true },
     createdAt: { type: Date, default: Date.now }
-}, { collection: 'users' }); // 🌟 यहाँ मोंगोडीबी को फ़ोर्स किया कि इसी कलेक्शन में डेटा जाए!
+}, { collection: 'users' }); // 🎯 इसी users कलेक्शन में डेटा जाएगा
 
 const User = mongoose.model('User', UserSchema);
 
 // ==========================================
-// 2. समय की पाबंदी का लॉजिक (10 AM to 5 PM)
-// ==========================================
-const checkPaymentTime = (req, res, next) => {
-    const now = new Date();
-    
-    // भारतीय समय (IST) के हिसाब से घंटे निकालना (UTC से IST +5:30)
-    const currentISTHour = now.getUTCHours() + 5; 
-    const currentISTMinute = now.getUTCMinutes() + 30;
-    
-    let totalMinutes = (currentISTHour * 60) + currentISTMinute;
-    if (currentISTMinute >= 60) totalMinutes += 30; 
-
-    const startMinutes = 10 * 60; // सुबह 10:00 बजे
-    const endMinutes = 17 * 60;  // शाम 05:00 बजे
-
-    // अगर कोई डिपॉजिट या विथड्रॉल का रूट हिट करता है (ये रूट्स हम आगे बनाएंगे)
-    if (req.path.includes('/deposit') || req.path.includes('/withdraw')) {
-        if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
-            return res.status(403).json({ 
-                success: false, 
-                message: "Transactions बंद हैं! कृपया सुबह 10:00 से शाम 05:00 के बीच प्रयास करें।" 
-            });
-        }
-    }
-    next();
-};
-
-app.use(checkPaymentTime);
-
-// ==========================================
-// 3. लॉगिन और रजिस्ट्रेशन एपीआई (AUTH API ROUTES)
+// 2. AUTH ROUTES (Register & Login)
 // ==========================================
 
-// 🔑 रजिस्ट्रेशन (Sign Up)
+// 🔑 Register Route
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { first_name, last_name, gmail, mobile, password, invite_code } = req.body;
 
-        // चेक करें कि यूजर पहले से है या नहीं
+        // पहले से मौजूद यूजर चेक करना
         const userExists = await User.findOne({ $or: [{ gmail }, { mobile }] });
         if (userExists) {
             return res.status(400).json({ success: false, message: "Mobile number ya Gmail pehle se registered hai!" });
         }
 
-        // 🆔 एक यूनिक 6-अंकों का डिजिटल UID जनरेट करना (जैसे: CW4829)
+        // यूनिक UID जनरेट करना (e.g., CW1234)
         const randomDigits = Math.floor(1000 + Math.random() * 9000);
         const uid = `CW${randomDigits}`;
 
+        // पासवर्ड हैश करना
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
         const newUser = new User({
-            uid, first_name, last_name, gmail, mobile, password, invite_code, wallet_balance: 0
+            uid, first_name, last_name, gmail, mobile, password: hashedPassword, invite_code
         });
 
         await newUser.save();
-
-        res.status(201).json({
-            success: true,
-            message: "Registration successful!",
-            uid: newUser.uid
-        });
-
+        res.status(201).json({ success: true, message: "Registration successful!", uid: newUser.uid });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: "Server error! Kripya dobara koshish karein." });
     }
 });
 
-// 🔓 लॉगिन (Sign In)
+// 🔓 Login Route
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { login_key, password } = req.body;
 
-        // यूजर को UID, Mobile, या Gmail किसी से भी ढूंढें
         const user = await User.findOne({
-            $or: [
-                { uid: login_key },
-                { mobile: login_key },
-                { gmail: login_key }
-            ]
+            $or: [{ uid: login_key }, { mobile: login_key }, { gmail: login_key }]
         });
 
         if (!user) {
-            return res.status(400).json({ success: false, message: "User nahi mila! Kripya details check karein." });
+            return res.status(400).json({ success: false, message: "User nahi mila!" });
         }
 
-        // पासवर्ड मैच करना
-        if (user.password !== password) {
-            return res.status(400).json({ success: false, message: "Galat Password! Kripya sahi password dalein." });
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Galat Password!" });
         }
 
         res.status(200).json({
             success: true,
             message: "Login successful!",
-            user: {
-                uid: user.uid,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                gmail: user.gmail,
-                mobile: user.mobile,
-                wallet_balance: user.wallet_balance
-            }
+            user: { uid: user.uid, first_name: user.first_name, last_name: user.last_name, gmail: user.gmail, mobile: user.mobile }
         });
-
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Server error! Login nahi ho paya." });
+        res.status(500).json({ success: false, message: "Server error during login." });
     }
 });
 
-// 🔍 टेस्ट रूट (सर्वर चेक करने के लिए)
-app.get('/', (req, res) => {
-    res.send("Central Wallet Server is Running Successfully without folders!");
-});
-// ==========================================
-// API TO FETCH MULTIPLE WALLET BALANCES
-// ==========================================
+// 🪙 Fetch Balance Route
 app.get('/api/wallet/balance', async (req, res) => {
     try {
         const { uid } = req.query;
         const user = await User.findOne({ uid });
-        
-        if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" });
-        }
-        
-        // Sending all balances to Dashboard
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
         res.status(200).json({
             success: true,
             nn_balance: user.nn_wallet_balance,
@@ -162,36 +105,17 @@ app.get('/api/wallet/balance', async (req, res) => {
             bot_balance: user.bot_mining_balance
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: "Internal server error during balance sync" });
-    }
-});
-// ==========================================
-// 🕵️ सीक्रेट टेस्टिंग रूट: डेटाबेस का असली डेटा देखने के लिए
-// ==========================================
-app.get('/api/secret-database-check-123', async (req, res) => {
-    try {
-        // डेटाबेस से सभी यूजर्स को ढूंढना
-        const allUsers = await User.find({}, { password: 0 }); // सुरक्षा के लिए पासवर्ड छुपाकर
-        
-        res.status(200).json({
-            success: true,
-            total_users_in_database: allUsers.length,
-            all_users_list: allUsers
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: "Database read error" });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
 // ==========================================
-// 4. मोंगोडीबी कनेक्शन और सर्वर स्टार्ट (DIRECTLY LOCKED URL)
+// 3. DATABASE CONNECTION (Locked to central_wallet_db)
 // ==========================================
-const database_url = "mongodb+srv://game_user:Nnalpha999@cluster0.garubng.mongodb.net/central_wallet_db?retryWrites=true&w=majority&appName=Cluster0";
+const DB_URL = process.env.MONGO_URI || "mongodb+srv://game_user:Nnalpha999@cluster0.garubng.mongodb.net/central_wallet_db?retryWrites=true&w=majority&appName=Cluster0";
 
-mongoose.connect(database_url)
-.then(() => console.log("MongoDB Connected Directly to central_wallet_db!"))
+mongoose.connect(DB_URL)
+.then(() => console.log("MongoDB Connected Successfully to central_wallet_db!"))
 .catch(err => console.error("Database Connection Error:", err));
 
 const PORT = process.env.PORT || 3000;
