@@ -325,6 +325,37 @@ app.get('/api/chat/history', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+// ==========================================
+// 5.C LIVE TEXT MESSAGE SEND API
+// ==========================================
+//              
+app.post('/api/chat/send', async (req, res) => {
+    try {
+        const { senderUid, receiverUid, content } = req.body;
+
+        if (!senderUid || !receiverUid || !content) {
+            return res.status(400).json({ success: false, message: "All fields are required." });
+        }
+
+        const newMessage = new Message({
+            senderUid,
+            receiverUid,
+            type: 'text', //   
+            content: content.trim(),
+            status: 'Successful'
+        });
+
+        await newMessage.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Message sent and logged into database successfully!",
+            data: newMessage
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // API 5:          (Live Sync Route)
 app.get('/api/user/:uid', async (req, res) => {

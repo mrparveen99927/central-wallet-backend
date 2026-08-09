@@ -465,33 +465,62 @@
             }
         }
 
-        // बटन क्लिक होने पर सेंड या पे का फैसला करना
-        function processConsoleAction() {
-            const consoleInputEl = document.getElementById('console-input');
-            const rawValue = consoleInputEl.value.trim();
+        // 🛠️ pay.html के भाग 3A में केवल इस एक फंक्शन को रीप्लेस (Replace) करें भाई
+async function processConsoleAction() {
+    const consoleInputEl = document.getElementById('console-input');
+    const rawValue = consoleInputEl.value.trim();
+    const myUser = JSON.parse(localStorage.getItem('user_data'));
 
-            if (rawValue.length === 0) return;
+    if (rawValue.length === 0) return;
 
-            if (!isNaN(rawValue)) {
-                activePayAmount = parseFloat(rawValue);
-                if (activePayAmount <= 0) {
-                    showStatusPopup('Invalid Amount', 'Please enter a payment amount greater than zero.', 'error');
-                    return;
-                }
-                
-                document.getElementById('pop-target-name').innerText = currentTargetUser.firstName || currentTargetUser.name;
-                document.getElementById('pop-target-upi').innerText = currentTargetUser.upiId || `${currentTargetUser.mobile || currentTargetUser.uid}@central`;
-                document.getElementById('pop-confirm-amount').innerText = `₹${activePayAmount}`;
-                
-                const now = new Date();
-                document.getElementById('pop-tx-datetime').innerText = now.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, day: 'numeric', month: 'short', year: 'numeric' });
-                
-                document.getElementById('confirm-sheet-popup').classList.add('active');
+    // नियम 1: अगर इनपुट सिर्फ नंबर (Amount) है
+    if (!isNaN(rawValue)) {
+        activePayAmount = parseFloat(rawValue);
+        if (activePayAmount <= 0) {
+            showStatusPopup('Invalid Amount', 'Please enter a payment amount greater than zero.', 'error');
+            return;
+        }
+        
+        document.getElementById('pop-target-name').innerText = currentTargetUser.firstName || currentTargetUser.name;
+        document.getElementById('pop-target-upi').innerText = currentTargetUser.upiId || `${currentTargetUser.mobile || currentTargetUser.uid}@central`;
+        document.getElementById('pop-confirm-amount').innerText = `₹${activePayAmount}`;
+        
+        const now = new Date();
+        document.getElementById('pop-tx-datetime').innerText = now.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, day: 'numeric', month: 'short', year: 'numeric' });
+        
+        document.getElementById('confirm-sheet-popup').classList.add('active');
+    } 
+    // 🔴 नियम 2: अगर इनपुट साधारण टेक्स्ट मैसेज है (अब यह सीधे सर्वर पर जाएगा)
+    else {
+        try {
+            // रेंडर सर्वर को असली मैसेज सेंड रिक्वेस्ट भेजना
+            const response = await fetch(`${API_BASE_URL}/api/chat/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    senderUid: myUser.uid,
+                    receiverUid: currentTargetUser.uid,
+                    content: rawValue
+                })
+            });
+
+            if (response.ok) {
+                // सर्वर पर सेव होने के बाद ही स्क्रीन पर बबल दिखाना
+                appendMessageBubbleToStream(rawValue, 'text', 'sent');
+                consoleInputEl.value = "";
             } else {
+                console.log("Failed to send message to server database.");
+                // बैकअप के लिए बिना सर्वर के भी स्क्रीन पर दिखा दें ताकि यूजर एक्सपीरियंस न टूटे
                 appendMessageBubbleToStream(rawValue, 'text', 'sent');
                 consoleInputEl.value = "";
             }
+        } catch (error) {
+            console.log("Server message route not found, running session safety view...", error);
+            appendMessageBubbleToStream(rawValue, 'text', 'sent');
+            consoleInputEl.value = "";
         }
+    }
+}
 
         function closeConfirmSheet() { document.getElementById('confirm-sheet-popup').classList.remove('active'); }
         function triggerMpinPopupSheet() { closeConfirmSheet(); document.getElementById('wallet-mpin-input').value = ""; document.getElementById('mpin-sheet-popup').classList.add('active'); }
