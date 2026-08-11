@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const https = require('https'); // 🟢 बिना किसी टर्मिनल के फ्री लाइव रेट खींचने का इन-बिल्ट टूल
 const cors = require('cors');
 require('dotenv').config();
 
@@ -507,6 +508,119 @@ app.post('/api/chat/mark-read', async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+});
+// ========================================================
+// 🟢 LIVE EXCHANGE ENGINE WITH SPREAD MARGIN & TRADING FEES (HTTPS VERSION)
+// ========================================================
+app.post('/api/wallet/exchange', async (req, res) => {
+    try {
+        const { uid, fromType, toType, amount } = req.body;
+
+        // 1. बुनियादी चेकिंग (Validation)
+        if (!uid || !fromType || !toType || !amount || amount <= 0) {
+            return res.status(400).json({ success: false, message: "Missing required parameters or invalid amount." });
+        }
+
+        // 2. डेटाबेस से यूजर को ढूंढना
+        const user = await User.findOne({ uid });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User account not found." });
+        }
+
+        // 3. चेक करना कि यूजर के पास बेचने के लिए पर्याप्त बैलेंस है या नहीं
+        const availableBalance = user[fromType] || 0;
+        if (amount > availableBalance) {
+            return res.status(400).json({ success: false, message: "Insufficient wallet balance to perform this trade." });
+        }
+
+        // 4. 🌍 इन-बिल्ट HTTPS टूल से असली लाइव डॉलर (USDT) का रेट खींचना
+        let liveUsdToInr = 95.00; // बैकअप रेट (अगर इंटरनेट स्लो हो तो काम आएगा)
+        
+        const fetchLiveRate = () => {
+            return new Promise((resolve) => {
+                https.get('https://exchangerate-api.com', (response) => {
+                    let data = '';
+                    response.on('data', (chunk) => { data += chunk; });
+                    response.on('end', () => {
+                        try {
+                            const parsedData = JSON.parse(data);
+                            if (parsedData && parsedData.rates && parsedData.rates.INR) {
+                                resolve(parsedData.rates.INR);
+                            } else { resolve(95.00); }
+                        } catch (e) { resolve(95.00); }
+                    });
+                }).on('on-error', () => { resolve(95.00); });
+            });
+        };
+
+        liveUsdToInr = await fetchLiveRate(); // असली मार्केट रेट मिल गया (जैसे ₹95.50)
+
+        // 5. 📊 आपका बिजनेस मास्टरस्ट्रोक (मार्जिन और फीस सेटिंग)
+        const spreadMargin = 0.03; // 3% मार्जिन मुनाफा (जो यूजर को रेट कम दिखाएगा)
+        const tradingFeePercent = 0.03; // 3% एक्सचेंज फीस (जो कन्वर्शन के बाद कटेगी)
+
+        // यूजर को मिलने वाला कस्टमाइज्ड डॉलर रेट
+        const adminFixedRate = liveUsdToInr * (1 - spreadMargin); 
+
+        // 📐 सभी 4 करेंसी के आपस में बदलने की लाइव गणित मैट्रिक्स
+        const customRates = {
+            cryptoBalance: { usdtBalance: 1 / 100000, balance: adminFixedRate / 100000, inrBalance: adminFixedRate / 100000 },
+            balance: { inrBalance: 1, usdtBalance: 1 / adminFixedRate, cryptoBalance: 1000 },
+            usdtBalance: { balance: adminFixedRate, inrBalance: adminFixedRate, cryptoBalance: 100000 },
+            inrBalance: { balance: 1, usdtBalance: 1 / adminFixedRate, cryptoBalance: 1000 }
+        };
+
+        // 6. मिनिमम लिमिट्स की कढ़ी चेकिंग (Security Guard)
+        const conversionRate = customRates[fromType][toType];
+        const rawReceived = amount * conversionRate;
+
+        if (fromType === 'cryptoBalance' && toType === 'usdtBalance' && rawReceived < 5) {
+            return res.status(400).json({ success: false, message: "Trade blocked! Minimum exchange value must equal 5 USDT." });
+        }
+        if (fromType === 'balance' && amount < 100) {
+            return res.status(400).json({ success: false, message: "Trade blocked! Minimum requirement is 100 Wallet Coins." });
+        }
+        if (fromType === 'usdtBalance' && amount < 5) {
+            return res.status(400).json({ success: false, message: "Trade blocked! Minimum requirement is $5.00 USDT." });
+        }
+        if (fromType === 'inrBalance' && amount < 100) {
+            return res.status(400).json({ success: false, message: "Trade blocked! Minimum requirement is ₹100.00 INR Cash." });
+        }
+
+        // 7. ✂️ 3% एक्सचेंज फीस काटना
+        const feeDeduction = rawReceived * tradingFeePercent;
+        const finalNetReceived = rawReceived - feeDeduction;
+
+        // 8. 💾 डेटाबेस में बैलेंस को अदल-बदल कर अपडेट करना
+        user[fromType] = parseFloat((user[fromType] - amount).toFixed(4));
+        
+        if (toType === 'cryptoBalance') {
+            user[toType] = Math.floor((user[toType] || 0) + finalNetReceived); // कॉइन्स हमेशा राउंड फिगर में रहेंगे
+        } else {
+            user[toType] = parseFloat(((user[toType] || 0) + finalNetReceived).toFixed(4));
+        }
+
+        // बदलावों को MongoDB में सुरक्षित सेव करना
+        await user.save();
+
+        // 9. फाइनल सफलता का रिपॉन्स भेजना
+        return res.status(200).json({
+            success: true,
+            message: "Asset exchange successfully completed with 3% processing fee.",
+            feeCharged: toType === 'cryptoBalance' ? Math.floor(feeDeduction) : parseFloat(feeDeduction.toFixed(4)),
+            netReceived: toType === 'cryptoBalance' ? Math.floor(finalNetReceived) : parseFloat(finalNetReceived.toFixed(4)),
+            updatedBalances: {
+                balance: user.balance,
+                inrBalance: user.inrBalance,
+                usdtBalance: user.usdtBalance,
+                cryptoBalance: user.cryptoBalance
+            }
+        });
+
+    } catch (error) {
+        console.error("Exchange Execution Error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error during trade processing." });
+    }
 });
 
 // ==========================================
