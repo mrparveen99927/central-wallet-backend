@@ -248,6 +248,27 @@
             cursor: pointer;
             outline: none;
         }
+        /* 🟢 रीसेंट लिस्ट के लिए ग्रीन टिप का स्टाइल */
+.recent-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.green-dot-indicator {
+    width: 12px;
+    height: 12px;
+    background-color: #12b76a; /* चमकदार हरा रंग */
+    border-radius: 50%;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 0 8px rgba(18, 183, 106, 0.6);
+}
+
     </style>
 </head>
 <body>
@@ -372,61 +393,86 @@
             loadRecentTransfersList();
         });
 
-        function loadRecentTransfersList() {
-            const listBox = document.getElementById('recent-list-box');
-            const recentSection = document.getElementById('recent-section');
-            
-            // लोकल स्टोरेज की रिसेंट तिजोरी से लिस्ट निकालना
-            const recentUsers = JSON.parse(localStorage.getItem('recent_wallet_transfers')) || [];
+        // 🟢 लोकल स्टोरेज की जगह सीधे सर्वर से लाइव रीसेंट लिस्ट और अनरीड स्टेटस लाना
+async function loadRecentTransfersList() {
+    const listBox = document.getElementById('recent-list-box');
+    const recentSection = document.getElementById('recent-section');
+    if (!listBox) return;
 
-            if (recentUsers.length === 0) {
-                // अगर कोई पुराना लेन-देन नहीं है, तो डमी के लिए प्रवीन नाम का एक सुंदर कार्ड दिखा देते हैं ताकि खाली न लगे
+    // लोकल स्टोरेज से लॉग-इन यूजर का डेटा निकालना
+    const userDataString = localStorage.getItem('user_data');
+    if (!userDataString) return;
+    
+    const localUser = JSON.parse(userDataString);
+    const myUid = localUser.uid;
+
+    try {
+        // सर्वर की नई API से रीसेंट लिस्ट मांगें
+        const response = await fetch(`${API_BASE_URL}/api/chat/recent?uid=${myUid}`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data.success && data.recent) {
+            if (data.recent.length === 0) {
+                // अगर कोई पुराना लेन-देन नहीं है, तो खाली न दिखे इसलिए डेमो कार्ड
                 const dummyArray = [{
                     firstName: "Parveen (Demo)",
                     uid: "999278",
                     mobile: "999278xxxx",
-                    upiId: "999278xxxx@central"
+                    upiId: "999278xxxx@central",
+                    unread: false
                 }];
                 renderRecentCards(dummyArray, listBox);
             } else {
-                // अगर असली डेटा मौजूद है, तो उसे स्क्रीन पर छापना
-                renderRecentCards(recentUsers, listBox);
+                // अगर असली डेटा मौजूद है, तो उसे स्क्रीन पर रेंडर करें
+                renderRecentCards(data.recent, listBox);
             }
         }
+    } catch (error) {
+        console.error("रीसेंट लिस्ट लोड करने में सर्वर एरर आया:", error);
+    }
+}
 
-        // रिसेंट कार्ड्स को HTML में रेंडर करने का फंक्शन
-        function renderRecentCards(usersArray, container) {
-            container.innerHTML = ""; // पुराना साफ करो
-            
-            usersArray.forEach(user => {
-                const card = document.createElement('div');
-                card.className = "user-result-card";
-                card.style.display = "flex"; // हमेशा दिखेगा
-                card.style.marginBottom = "0px";
-                
-                const firstLetter = (user.firstName || user.name || "U").charAt(0);
-                const upiText = user.upiId || `${user.mobile || user.uid}@central`;
+        // 🟢 रीसेंट कार्ड्स को HTML में रेंडर करने और ग्रीन टिप दिखाने का फंक्शन
+function renderRecentCards(usersArray, container) {
+    container.innerHTML = ""; // पुराना साफ करो
+    usersArray.forEach(user => {
+        const card = document.createElement('div');
+        card.className = "user-result-card recent-item"; // यहाँ recent-item क्लास जोड़ी गई है
+        card.style.display = "flex"; // हमेशा दिखेगा
+        card.style.marginBottom = "0px";
+        
+        const firstLetter = (user.firstName || user.name || "U").charAt(0);
+        const upiText = user.upiId || `${user.mobile || user.uid}@central`;
+        
+        card.innerHTML = `
+            <div class="card-left">
+                <div class="user-avatar-circle" style="background: #efecf7; color: #5f259f;">
+                    ${firstLetter}
+                </div>
+                <div class="user-details-box">
+                    <h4>${user.firstName || user.name}</h4>
+                    <p style="color: #777777; font-weight: 400;">ID: ${user.uid} | ${upiText}</p>
+                </div>
+            </div>
+            <svg class="pay-arrow-svg" viewBox="0 0 24 24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+            <!-- 🟢 अगर मैसेज अनरीड है (user.unread === true) तो हरी टिप दिखाएं -->
+            ${user.unread ? '<div class="green-dot-indicator"></div>' : ''}
+        `;
 
-                card.innerHTML = `
-                    <div class="card-left">
-                        <div class="user-avatar-circle" style="background: #efecf7; color: #5f259f;">${firstLetter}</div>
-                        <div class="user-details-box">
-                            <h4>${user.firstName || user.name}</h4>
-                            <p style="color: #777777; font-weight: 400;">ID: ${user.uid} | ${upiText}</p>
-                        </div>
-                    </div>
-                    <svg class="pay-arrow-svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-                `;
+        // कार्ड पर क्लिक करते ही सीधे पे पेज पर भेजने का क्लिक इवेंट
+        card.onclick = () => {
+            // एक्टिव पे टारगेट को सेव करना ताकि pay.html इसे समझ सके
+            localStorage.setItem('active_pay_target', JSON.stringify(user));
+            window.location.href = "pay.html";
+        };
+        
+        container.appendChild(card);
+    });
+}
 
-                // कार्ड पर क्लिक करते ही सीधे पे पेज पर भेजने का क्लिक इवेंट
-                card.onclick = () => {
-                    localStorage.setItem('active_pay_target', JSON.stringify(user));
-                    window.location.href = "pay.html";
-                };
-
-                container.appendChild(card);
-            });
-        }
                 // लाइव इनपुट सर्चिंग इंजन
         function handleLiveSearch() {
             const queryValue = document.getElementById('search-input').value.trim();

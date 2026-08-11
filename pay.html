@@ -441,6 +441,9 @@
 
                 // 🔴 असली जादू: डेटाबेस से इन दोनों यूज़र्स की असली हिस्ट्री खींचना 🔴
                 await fetchRealTimeChatHistoryFromServer(myUser.uid, currentTargetUser.uid);
+                // 🟢 यह नई लाइन जोड़ी गई है
+await markMessagesAsReadLive(myUser.uid, currentTargetUser.uid);
+
             } else {
                 window.location.href = "transfer.html";
             }
@@ -459,6 +462,24 @@
                 }
             });
         });
+// 🟢 चैट खोलते ही बैकएंड पर 'Read' मार्क करने और ग्रीन टिप हटाने का फंक्शन
+async function markMessagesAsReadLive(myUid, targetUid) {
+    if (!myUid || !targetUid) return;
+    try {
+        // सर्वर की 'mark-read' API को रिक्वेस्ट भेजना
+        await fetch(`${API_BASE_URL}/api/chat/mark-read`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                myUid: myUid,       // मेरी आईडी (प्राप्तकर्ता)
+                targetUid: targetUid // सामने वाले की आईडी (भेजनेवाला)
+            })
+        });
+        console.log("मैसेजेस सफलतापूर्वक Seen मार्क कर दिए गए हैं।");
+    } catch (error) {
+        console.error("मैसेज रीड मार्क करने में सर्वर एरर आया:", error);
+    }
+}
 
         async function fetchRealTimeChatHistoryFromServer(myUid, targetUid) {
     try {
