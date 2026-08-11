@@ -541,7 +541,7 @@
                     if (localUser.uid) document.getElementById('user-uid').innerText = localUser.uid;
                     if (localUser.balance !== undefined) document.getElementById('user-balance').innerText = `₹${localUser.balance}`;
                     // 🟢 लोकल स्टोरेज से डेटा लेकर नए एसेट बॉक्स में डालना
-if (localUser.balance !== undefined) document.getElementById('asset-inr-val').innerText = `₹${localUser.balance}`;
+if (localUser.inrBalance !== undefined) document.getElementById('asset-inr-val').innerText = `₹${localUser.inrBalance}`;
 if (localUser.usdtBalance !== undefined) document.getElementById('asset-usdt-val').innerText = `$${localUser.usdtBalance.toFixed(2)}`;
 if (localUser.cryptoBalance !== undefined) document.getElementById('asset-crypto-val').innerText = `${localUser.cryptoBalance} CC`;
 
@@ -562,7 +562,7 @@ if (localUser.cryptoBalance !== undefined) document.getElementById('asset-crypto
                                     document.getElementById('user-letter').innerText = freshData.user.firstName.charAt(0);
                                 }
                                 // 🟢 सर्वर से लाइव डेटा आने पर नए एसेट बॉक्स को अपडेट करना
-document.getElementById('asset-inr-val').innerText = `₹${freshData.user.balance}`;
+document.getElementById('asset-inr-val').innerText = `₹${freshData.user.inrBalance || 0}`;
 document.getElementById('asset-usdt-val').innerText = `$${(freshData.user.usdtBalance || 0).toFixed(2)}`;
 document.getElementById('asset-crypto-val').innerText = `${freshData.user.cryptoBalance || 0} CC`;
 
