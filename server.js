@@ -79,7 +79,8 @@ const MessageSchema = new mongoose.Schema({
     receiverUid: { type: String, required: true },
     type: { type: String, enum: ['text', 'payment'], required: true }, // text  payment
     content: { type: String, required: true }, //     
-    status: { type: String, default: "Successful" }
+    status: { type: String, default: "Successful" },
+    isRead: { type: Boolean, default: false }
 }, { timestamps: true });
 
 const Message = mongoose.model('Message', MessageSchema);
@@ -326,35 +327,6 @@ app.post('/api/wallet/transfer', async (req, res) => {
     }
 });
 
-// --- ADMIN PANEL API: TRACK PAYMENT BY UTR ---
-app.get('/api/admin/track-utr', async (req, res) => {
-    try {
-        const { utrNumber } = req.query;
-
-        if (!utrNumber) {
-            return res.status(400).json({ success: false, message: "UTR Number is required for tracking." });
-        }
-
-        //   messages     UTR   
-        const transaction = await Message.findOne({ utr: utrNumber });
-
-        if (!transaction) {
-            return res.status(404).json({ success: false, message: "No transaction found with this UTR Number. Invalid or Fake!" });
-        }
-
-        //            
-        res.status(200).json({
-            success: true,
-            message: "Transaction verified successfully.",
-            data: transaction
-        });
-
-    } catch (error) {
-        console.error("Admin UTR Tracking Error:", error);
-        res.status(500).json({ success: false, message: "Internal server error during tracking." });
-    }
-});
-
 // ==========================================
 // 5.B LIVE CHAT & TRANSACTION HISTORY FETCH API
 // ==========================================
@@ -461,6 +433,74 @@ app.get('/api/user/:uid', async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
+});
+app.get('/api/chat/recent', async (req, res) => {
+  try {
+    const { uid } = req.query;
+    if (!uid) {
+      return res.status(400).json({ success: false, message: "User UID is required." });
+    }
+
+    // 1. यूजर से जुड़े सभी मैसेजेस (भेजे गए और प्राप्त हुए) निकालें
+    const messages = await Message.find({
+      $or: [{ senderUid: uid }, { receiverUid: uid }]
+    }).sort({ createdAt: -1 });
+
+    const recentInteractions = [];
+    const seenUids = new Set();
+
+    // 2. हर एक अनोखे (Unique) यूजर के साथ आखिरी बातचीत का रिकॉर्ड बनाएं
+    for (const msg of messages) {
+      const targetUid = msg.senderUid === uid ? msg.receiverUid : msg.senderUid;
+      
+      if (!seenUids.has(targetUid)) {
+        seenUids.add(targetUid);
+
+        // सामने वाले यूजर की डिटेल्स डेटाबेस से निकालें
+        const targetUser = await User.findOne({ uid: targetUid });
+        if (targetUser) {
+          // यह गिने कि इस स्पेसिफिक यूजर ने हमें कितने अनरीड मैसेज भेजे हैं
+          const unreadCount = await Message.countDocuments({
+            senderUid: targetUid,
+            receiverUid: uid,
+            isRead: false
+          });
+
+          recentInteractions.push({
+            uid: targetUser.uid,
+            firstName: targetUser.firstName,
+            lastName: targetUser.lastName,
+            mobile: targetUser.mobile,
+            upiId: `${targetUser.mobile}@central`,
+            lastMessageTime: msg.createdAt,
+            unread: unreadCount > 0 // 🟢 अगर अनरीड मैसेज हैं तो true होगा
+          });
+        }
+      }
+    }
+
+    res.status(200).json({ success: true, recent: recentInteractions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+app.post('/api/chat/mark-read', async (req, res) => {
+  try {
+    const { myUid, targetUid } = req.body;
+    if (!myUid || !targetUid) {
+      return res.status(400).json({ success: false, message: "Both myUid and targetUid are required." });
+    }
+
+    // सामने वाले यूजर (targetUid) द्वारा मुझे (myUid) भेजे गए सभी मैसेजेस को Read मार्क करें
+    await Message.updateMany(
+      { senderUid: targetUid, receiverUid: myUid, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.status(200).json({ success: true, message: "Messages marked as read successfully." });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // ==========================================
