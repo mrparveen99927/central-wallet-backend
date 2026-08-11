@@ -569,7 +569,8 @@ async function processConsoleAction() {
         function closeConfirmSheet() { document.getElementById('confirm-sheet-popup').classList.remove('active'); }
         function triggerMpinPopupSheet() { closeConfirmSheet(); document.getElementById('wallet-mpin-input').value = ""; document.getElementById('mpin-sheet-popup').classList.add('active'); }
         function closeMpinSheetPopup() { document.getElementById('mpin-sheet-popup').classList.remove('active'); }
-        function handleSmartBackButton() { const backFlag = localStorage.getItem('back_to_transfer'); if (backFlag === 'yes') { localStorage.removeItem('back_to_transfer'); window.location.href = "transfer.html"; } else { window.location.href = "dashboard.html"; } }
+function handleSmartBackButton() { window.location.href = "transfer.html"; }
+
                 // 🔴 असली फाइनल वॉलेट बैलेंस डिडक्ट लॉजिक 🔴
         async function executeLiveWalletTransaction(event) {
             event.preventDefault();
