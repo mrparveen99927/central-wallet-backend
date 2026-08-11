@@ -81,7 +81,7 @@ const User = mongoose.model('User', UserSchema);
 const MessageSchema = new mongoose.Schema({
     senderUid: { type: String, required: true },
     receiverUid: { type: String, required: true },
-    type: { type: String, enum: ['text', 'payment'], required: true }, // text  payment
+    type: { type: String, enum: ['text', 'payment', 'exchange'], required: true }, // 🟢 'exchange' भी शामिल कर दिया
     content: { type: String, required: true }, //     
     status: { type: String, default: "Successful" },
     isRead: { type: Boolean, default: false }
@@ -602,7 +602,17 @@ app.post('/api/wallet/exchange', async (req, res) => {
 
         // बदलावों को MongoDB में सुरक्षित सेव करना
         await user.save();
-
+        // 🟢 नया कोड: एक्सचेंज सफल होते ही हिस्ट्री डेटाबेस में रिकॉर्ड सेव करना
+        const exchangeLog = new Message({
+            senderUid: uid,
+            receiverUid: "SYSTEM_EXCHANGE", // यह दर्शाता है कि यह एक्सचेंज ट्रांजैक्शन है
+            type: "exchange",
+            content: `${amount} [${fromType}] ➔ ${toType === 'cryptoBalance' ? Math.floor(finalNetReceived) : parseFloat(finalNetReceived.toFixed(4))} [${toType}]`,
+            status: "Successful",
+            isRead: true
+        });
+        await exchangeLog.save();
+        
         // 9. फाइनल सफलता का रिपॉन्स भेजना
         return res.status(200).json({
             success: true,
