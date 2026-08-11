@@ -67,7 +67,10 @@ const UserSchema = new mongoose.Schema({
   referredBy: { 
     type: String, 
     default: "" 
-  } //      ()
+  }, //      ()
+  alphaCoinBalance: { type: Number, default: 0 }, // Alpha Coin (AC)
+  usdtBalance: { type: Number, default: 0 },      // Digital Dollar (USDT)
+  cryptoBalance: { type: Number, default: 0 }     // Central Coin (CC)
 }, { timestamps: true });
 
 const User = mongoose.model('User', UserSchema);
@@ -427,7 +430,10 @@ app.get('/api/user/:uid', async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 mobile: user.mobile,
-                balance: user.balance
+                balance: user.balance,
+                alphaCoinBalance: user.alphaCoinBalance || 0,
+usdtBalance: user.usdtBalance || 0,
+cryptoBalance: user.cryptoBalance || 0
             }
         });
     } catch (error) {
