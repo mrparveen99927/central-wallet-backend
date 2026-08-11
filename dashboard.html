@@ -284,6 +284,79 @@
             cursor: pointer;
             outline: none;
         }
+        /* 🪙 क्रिप्टो और डॉलर एसेट बॉक्स का प्रीमियम डिज़ाइन */
+.assets-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid #eef0f3;
+}
+
+.assets-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 14px;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.asset-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+/* हर करेंसी के बीच एक हल्की सी लाइन खींचने के लिए */
+.asset-row:not(:last-child) {
+    border-bottom: 1px solid #f4f5f7;
+}
+
+.asset-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.asset-icon-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* अलग-अलग कॉइन के लिए अलग-अलग बैकग्राउंड कलर */
+.bg-inr { background: #e8f9ee; color: #12b76a; }
+.bg-usdt { background: #e6f2ff; color: #0076ff; }
+.bg-crypto { background: #fdf6e6; color: #ff9800; }
+
+.asset-details h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.asset-details p {
+    font-size: 11px;
+    color: #888888;
+    margin-top: 1px;
+}
+
+.asset-right-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
     </style>
 </head>
 <body>
@@ -313,6 +386,51 @@
                 <span>Google / Unity Ads Banner Area</span>
             </div>
         </div>
+<!-- 🟢 नया एसेट बॉक्स: यहाँ यूज़र को तीनों करेंसी साफ़ दिखेंगी -->
+<div class="assets-container">
+    <div class="assets-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#5f259f" style="display:inline-block;">
+            <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+        </svg>
+        <span>My Portfolio & Assets</span>
+    </div>
+
+    <!-- 1. भारतीय रुपया (INR) -->
+    <div class="asset-row">
+        <div class="asset-left">
+            <div class="asset-icon-circle bg-inr">🇮🇳</div>
+            <div class="asset-details">
+                <h4>Wallet Cash</h4>
+                <p>Main Wallet Balance</p>
+            </div>
+        </div>
+        <div id="asset-inr-val" class="asset-right-value">₹0</div>
+    </div>
+
+    <!-- 2. डिजिटल डॉलर (USDT) -->
+    <div class="asset-row">
+        <div class="asset-left">
+            <div class="asset-icon-circle bg-usdt">💵</div>
+            <div class="asset-details">
+                <h4>Digital Dollar</h4>
+                <p>USDT Stable Coin</p>
+            </div>
+        </div>
+        <div id="asset-usdt-val" class="asset-right-value">$0.00</div>
+    </div>
+
+    <!-- 3. सेंट्रल क्रिप्टो कॉइन (CC) -->
+    <div class="asset-row">
+        <div class="asset-left">
+            <div class="asset-icon-circle bg-crypto">🪙</div>
+            <div class="asset-details">
+                <h4>Central Coin</h4>
+                <p>Telegram Mining Token</p>
+            </div>
+        </div>
+        <div id="asset-crypto-val" class="asset-right-value">0 CC</div>
+    </div>
+</div>
 
         <!-- Four Main Wallet Option Boxes -->
         <div class="section-title">Wallet Options</div>
@@ -366,10 +484,15 @@
             <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
             <span>Search</span>
         </div>
-        <div class="nav-item" onclick="handleBottomNavClick('Pay')">
-            <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M4 4h7v7H4zm2 2v3h3V6zm0 7h7v7H4zm2 2v3h3v-3zm7-11h7v7h-7zm2 2v3h3V6zm0 7h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm2-2h2v-2h-2zm0-2h2v-2h-2zm2 2h2v-2h-2z"/></svg></div>
-            <span>Pay</span>
-        </div>
+        <div class="nav-item" onclick="location.href='transfer.html'">
+    <div class="nav-icon-wrapper">
+        <svg class="nav-icon-svg" viewBox="0 0 24 24">
+            <path d="M4 4h7v7H4zm2 2v3h3V6zm0 7h7v7H4zm2 2v3h3v-3zm7-11h7v7h-7zm2 2v3h3V6zm0 7h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm2-2h2v-2h-2zm0-2h2v-2h-2zm2 2h2v-2h-2z"/>
+        </svg>
+    </div>
+    <span>Pay</span>
+</div>
+
         <div class="nav-item" onclick="handleBottomNavClick('Alert')">
             <div class="nav-icon-wrapper"><svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 4.36 6 6.92 6 10v5l-2 2v1h16v-1l-2-2z"/></svg></div>
             <span>Alert</span>
@@ -417,6 +540,11 @@
                     
                     if (localUser.uid) document.getElementById('user-uid').innerText = localUser.uid;
                     if (localUser.balance !== undefined) document.getElementById('user-balance').innerText = `₹${localUser.balance}`;
+                    // 🟢 लोकल स्टोरेज से डेटा लेकर नए एसेट बॉक्स में डालना
+if (localUser.balance !== undefined) document.getElementById('asset-inr-val').innerText = `₹${localUser.balance}`;
+if (localUser.usdtBalance !== undefined) document.getElementById('asset-usdt-val').innerText = `$${localUser.usdtBalance.toFixed(2)}`;
+if (localUser.cryptoBalance !== undefined) document.getElementById('asset-crypto-val').innerText = `${localUser.cryptoBalance} CC`;
+
 
                     // 2. इसके बाद ही बैकएंड सर्वर से बैलेंस अपडेट करने की कोशिश करना
                     if (userUid && userUid !== "000000") {
@@ -433,6 +561,11 @@
                                     document.getElementById('user-name').innerText = freshData.user.firstName;
                                     document.getElementById('user-letter').innerText = freshData.user.firstName.charAt(0);
                                 }
+                                // 🟢 सर्वर से लाइव डेटा आने पर नए एसेट बॉक्स को अपडेट करना
+document.getElementById('asset-inr-val').innerText = `₹${freshData.user.balance}`;
+document.getElementById('asset-usdt-val').innerText = `$${(freshData.user.usdtBalance || 0).toFixed(2)}`;
+document.getElementById('asset-crypto-val').innerText = `${freshData.user.cryptoBalance || 0} CC`;
+
                                 localStorage.setItem('user_data', JSON.stringify(freshData.user));
                             }
                         }
