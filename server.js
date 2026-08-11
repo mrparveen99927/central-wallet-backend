@@ -367,15 +367,15 @@ app.get('/api/wallet/history', async (req, res) => {
             return res.status(400).json({ success: false, message: "User Identity (uid) is required." });
         }
 
-        //         sender   receiver ,   'payment' 
+                // 🟢 सुधरा हुआ कोड: अब यह payment (आपसी ट्रांसफर) और exchange दोनों को एक साथ डेटाबेस से खींचेगा
         const walletHistory = await Message.find({
-            type: 'payment',
+            type: { $in: ['payment', 'exchange'] }, // दोनों प्रकार शामिल कर लिए
             $or: [
                 { senderUid: uid },
                 { receiverUid: uid }
             ]
-        }).sort({ createdAt: -1 }); // -1         
-
+        }).sort({ createdAt: -1 });
+        
         res.status(200).json({
             success: true,
             message: "Wallet passbook logs fetched successfully.",
