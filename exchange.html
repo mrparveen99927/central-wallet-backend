@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Wallet - Instant Exchange</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #f6f7f9;
+            padding-bottom: 30px;
+        }
+        /* 1. TOP HEADER BAR */
+        .header-bar {
+            background: #5f259f; /* PhonePe Purple */
+            padding: 18px 16px;
+            display: flex;
+            align-items: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(95, 37, 159, 0.15);
+        }
+        .back-btn {
+            cursor: pointer;
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        /* 2. CONVERTER CONTAINER */
+        .exchange-container {
+            padding: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .exchange-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+            border: 1px solid #f0f0f4;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        /* INPUT BOX LAYOUT */
+        .input-group {
+            background: #f8f9fc;
+            border: 1px solid #eef0f6;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+        .input-group:focus-within {
+            border-color: #5f259f;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(95, 37, 159, 0.08);
+        }
+        .input-label {
+            font-size: 11px;
+            color: #777788;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .coin-select {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            color: #222222;
+            outline: none;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .amount-input {
+            width: 60%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-align: right;
+        }
+        .amount-input::placeholder {
+            color: #bbc2d0;
+        }
+        .balance-text {
+            font-size: 11px;
+            color: #888899;
+            margin-top: 6px;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        /* SWAP BUTTON INDEPENDENT CIRCLE */
+        .swap-circle {
+            width: 40px;
+            height: 40px;
+            background: #5f259f;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: -6px auto 6px auto;
+            cursor: pointer;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(95, 37, 159, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .swap-circle:active {
+            transform: scale(0.9) rotate(180deg);
+        }
+
+        /* 3. INFO CARD FOR LIVE RATES & RULES */
+        .info-card {
+            background: #fbf9fe;
+            border: 1px dashed #dcd1eb;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 24px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #555566;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        .info-row span:last-child {
+            font-weight: 700;
+            color: #222222;
+        }
+        .warning-msg {
+            color: #d92d20 !important;
+            font-weight: 700;
+        }
+
+        /* 4. PREMIUM CONVERT BUTTON */
+        .exchange-btn {
+            width: 100%;
+            padding: 16px;
+            background: #5f259f;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(95, 37, 159, 0.25);
+            transition: all 0.2s ease;
+        }
+        .exchange-btn:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP PURPLE HEADER BAR -->
+    <div class="header-bar">
+        <div class="back-btn" onclick="location.href='dashboard.html'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </div>
+        <div class="header-title">Instant Exchange</div>
+    </div>
+
+    <div class="exchange-container">
+        <div class="exchange-card">
+            
+            <!-- 2. FROM BOX (The asset you want to sell) -->
+            <div class="input-group">
+                <div class="input-label">From (You Sell)</div>
+                <div class="input-row">
+                    <select id="from-coin" class="coin-select" onchange="handleCoinChange()">
+                        <option value="balance">Wallet Coin</option>
+                        <option value="cryptoBalance" selected>Central Coin (CC)</option>
+                        <option value="usdtBalance">USDT ($)</option>
+                        <option value="inrBalance">INR Cash</option>
+                    </select>
+                    <input type="number" id="from-amount" class="amount-input" placeholder="0" oninput="calculateLiveExchange()">
+                </div>
+                <div class="balance-text">Available: <span id="from-bal-span">0</span></div>
+            </div>
+
+            <!-- 3. MIDDLE SWAP BUTTON FOR INTERCHANGE -->
+            <div class="swap-circle" onclick="swapCurrencies()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="17 11 12 6 7 11"></polyline>
+                    <polyline points="7 13 12 18 17 13"></polyline>
+                </svg>
+            </div>
+
+            <!-- 4. TO BOX (The asset you want to receive) -->
+            <div class="input-group" style="margin-bottom: 6px;">
+                <div class="input-label">To (You Receive)</div>
+                <div class="input-row">
+                    <select id="to-coin" class="coin-select" onchange="handleCoinChange()">
+                        <option value="balance">Wallet Coin</option>
+                        <option value="cryptoBalance">Central Coin (CC)</option>
+                        <option value="usdtBalance" selected>USDT ($)</option>
+                        <option value="inrBalance">INR Cash</option>
+                    </select>
+                    <input type="number" id="to-amount" class="amount-input" placeholder="0" readonly>
+                </div>
+                <div class="balance-text">Available: <span id="to-bal-span">0</span></div>
+            </div>
+
+        </div>
+
+        <!-- 5. LIVE EXCHANGE RATES CARD -->
+        <div class="info-card">
+            <div class="info-row">
+                <span>Current Exchange Rate:</span>
+                <span id="live-rate-text">100,000 CC = 1 USDT</span>
+            </div>
+            <div class="info-row">
+                <span>Minimum Required:</span>
+                <span id="min-limit-text">500,000 CC (Min 5 USDT)</span>
+            </div>
+            <div class="info-row" id="warning-row" style="display: none; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0;">
+                <span class="warning-msg" id="error-message-text">Insufficient balance or below limit!</span>
+            </div>
+        </div>
+
+        <!-- 6. MASTER CONFIRM CONVERT BUTTON -->
+        <button id="confirm-exchange-btn" class="exchange-btn" disabled onclick="processExchangeRequest()">Confirm Exchange</button>
+    </div>
+        <!-- 1. PREMIUM SUCCESS/ERROR MODAL POPUP HTML -->
+    <div id="exchange-popup-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: all 0.25s ease;">
+        <div style="background: #ffffff; padding: 30px 24px; border-radius: 16px; text-align: center; max-width: 340px; width: 85%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div id="popup-status-icon" style="width: 56px; height: 56px; margin: 0 auto 16px auto; display: flex; justify-content: center; align-items: center; border-radius: 50%;"></div>
+            <h3 id="popup-status-title" style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">Status</h3>
+            <p id="popup-status-msg" style="font-size: 13px; color: #555566; line-height: 1.5; margin-bottom: 22px;">Message</p>
+            <button onclick="closeExchangePopup()" style="width: 100%; padding: 12px; background: #5f259f; color: white; border: none; border-radius: 25px; font-weight: 600; font-size: 14px; cursor: pointer; outline: none;">Dismiss</button>
+        </div>
+    </div>
+
+    <!-- 2. LIVE ALL-CURRENCY LIMITS TERMINAL LIST -->
+    <div style="max-width: 500px; margin: 0 auto; padding: 0 16px 20px 16px;">
+        <div style="background: #ffffff; border-radius: 14px; padding: 16px; border: 1px solid #eef0f6; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+            <h4 style="font-size: 12px; font-weight: 700; color: #5f259f; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5f259f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                Global System Minimum Limits List
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #444; border-bottom: 1px dashed #f0f0f4; padding-bottom: 6px;">
+                    <span style="font-weight: 500;">🪙 Central Coin (CC) Minimum:</span>
+                    <span style="font-weight: 700; color: #1a1a1a;">500,000 CC (Value $5)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #444; border-bottom: 1px dashed #f0f0f4; padding-bottom: 6px;">
+                    <span style="font-weight: 500;">🟢 Wallet Coin (Alpha) Minimum:</span>
+                    <span style="font-weight: 700; color: #1a1a1a;">100 Coins</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #444; border-bottom: 1px dashed #f0f0f4; padding-bottom: 6px;">
+                    <span style="font-weight: 500;">💵 Digital Dollar (USDT) Minimum:</span>
+                    <span style="font-weight: 700; color: #1a1a1a;">$5.00 USDT</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #444; padding-bottom: 2px;">
+                    <span style="font-weight: 500;">🇮🇳 Indian Rupee (INR Cash) Minimum:</span>
+                    <span style="font-weight: 700; color: #1a1a1a;">₹100.00 INR</span>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- 3. ADVANCED EXCHANGE LOGIC ENGINE -->
+    <script>
+        const API_BASE_URL = "https://central-wallet-game-api.onrender.com";
+        let userWalletData = {};
+
+        // MATRIX (100,000 CC = $1 | $1 = 90 Wallet Coins)
+        const exchangeRates = {
+            cryptoBalance: { usdtBalance: 1 / 100000, balance: 90 / 100000, inrBalance: 90 / 100000 },
+            balance: { inrBalance: 1, usdtBalance: 1 / 90, cryptoBalance: 1000 },
+            usdtBalance: { balance: 90, inrBalance: 90, cryptoBalance: 100000 },
+            inrBalance: { balance: 1, usdtBalance: 1 / 90, cryptoBalance: 1000 }
+        };
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const userDataString = localStorage.getItem('user_data');
+            if (userDataString) {
+                userWalletData = JSON.parse(userDataString);
+                updateAvailableBalancesOnScreen();
+                
+                if (userWalletData.uid && userWalletData.uid !== "000000") {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/user/${userWalletData.uid}`);
+                        if (response.ok) {
+                            const freshData = await response.json();
+                            if (freshData.success && freshData.user) {
+                                userWalletData = freshData.user;
+                                localStorage.setItem('user_data', JSON.stringify(userWalletData));
+                                updateAvailableBalancesOnScreen();
+                            }
+                        }
+                    } catch (e) { console.log("Database bridge sync delayed."); }
+                }
+            }
+            calculateLiveExchange();
+        });
+
+        function updateAvailableBalancesOnScreen() {
+            const fromType = document.getElementById('from-coin').value;
+            const toType = document.getElementById('to-coin').value;
+
+            document.getElementById('from-bal-span').innerText = formatBalanceDisplay(userWalletData[fromType], fromType);
+            document.getElementById('to-bal-span').innerText = formatBalanceDisplay(userWalletData[toType], toType);
+        }
+
+        function formatBalanceDisplay(val, type) {
+            let num = val || 0;
+            if (type === 'cryptoBalance') return `${num.toLocaleString()} CC`;
+            if (type === 'usdtBalance') return `$${num.toFixed(2)}`;
+            if (type === 'balance') return `${num.toFixed(2)} Coins`;
+            return `₹${num.toFixed(2)}`;
+        }
+
+        function handleCoinChange() {
+            const fromSelect = document.getElementById('from-coin');
+            const toSelect = document.getElementById('to-coin');
+            
+            if (fromSelect.value === toSelect.value) {
+                if (fromSelect.value === 'cryptoBalance') toSelect.value = 'usdtBalance';
+                else toSelect.value = 'cryptoBalance';
+            }
+            
+            updateAvailableBalancesOnScreen();
+            updateRateAndLimitLabels();
+            calculateLiveExchange();
+        }
+
+        function swapCurrencies() {
+            const fromSelect = document.getElementById('from-coin');
+            const toSelect = document.getElementById('to-coin');
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            
+            handleCoinChange();
+        }
+
+        function updateRateAndLimitLabels() {
+            const from = document.getElementById('from-coin').value;
+            const to = document.getElementById('to-coin').value;
+            const rateText = document.getElementById('live-rate-text');
+            const limitText = document.getElementById('min-limit-text');
+
+            if (from === 'cryptoBalance' && to === 'usdtBalance') {
+                rateText.innerText = "100,000 CC = 1 USDT";
+                limitText.innerText = "500,000 CC (Min 5 USDT)";
+            } else if (from === 'balance' && to === 'inrBalance') {
+                rateText.innerText = "1 Wallet Coin = 1 INR";
+                limitText.innerText = "100 Wallet Coins";
+            } else if (from === 'balance' && to === 'usdtBalance') {
+                rateText.innerText = "90 Wallet Coins = 1 USDT";
+                limitText.innerText = "450 Wallet Coins (Min 5 USDT)";
+            } else {
+                rateText.innerText = `Dynamic Pair Connection Active`;
+                limitText.innerText = `Global asset limits apply`;
+            }
+        }
+
+        function calculateLiveExchange() {
+            const fromType = document.getElementById('from-coin').value;
+            const toType = document.getElementById('to-coin').value;
+            const fromAmountInput = document.getElementById('from-amount').value;
+            const toAmountInput = document.getElementById('to-amount');
+            const confirmBtn = document.getElementById('confirm-exchange-btn');
+            const warningRow = document.getElementById('warning-row');
+            const errorText = document.getElementById('error-message-text');
+
+            if (!fromAmountInput || isNaN(fromAmountInput) || parseFloat(fromAmountInput) <= 0) {
+                toAmountInput.value = "";
+                confirmBtn.disabled = true;
+                warningRow.style.display = 'none';
+                return;
+            }
+
+            const fromAmt = parseFloat(fromAmountInput);
+            const conversionRate = exchangeRates[fromType][toType];
+            const finalReceived = fromAmt * conversionRate;
+            
+            toAmountInput.value = toType === 'cryptoBalance' ? Math.floor(finalReceived) : finalReceived.toFixed(2);
+
+            let isUserBalanceShort = fromAmt > (userWalletData[fromType] || 0);
+            let isLimitViolated = false;
+            let currentErrorMessage = "";
+
+            if (fromType === 'cryptoBalance' && toType === 'usdtBalance' && finalReceived < 5) {
+                isLimitViolated = true;
+                currentErrorMessage = "Trade blocked! Minimum exchange value must equal 5 USDT (500,000 CC).";
+            }
+            else if (fromType === 'balance' && fromAmt < 100) {
+                isLimitViolated = true;
+                currentErrorMessage = "Trade blocked! Minimum exchange requirement is 100 Wallet Coins.";
+            }
+            else if (fromType === 'usdtBalance' && fromAmt < 5) {
+                isLimitViolated = true;
+                currentErrorMessage = "Trade blocked! Minimum exchange requirement is $5.00 USDT.";
+            }
+            else if (fromType === 'inrBalance' && fromAmt < 100) {
+                isLimitViolated = true;
+                currentErrorMessage = "Trade blocked! Minimum exchange requirement is ₹100.00 INR Cash.";
+            }
+
+            if (isUserBalanceShort) {
+                confirmBtn.disabled = true;
+                warningRow.style.display = 'block';
+                errorText.innerText = "Trade blocked! Insufficient available balance inside your wallet.";
+            } else if (isLimitViolated) {
+                confirmBtn.disabled = true;
+                warningRow.style.display = 'block';
+                errorText.innerText = currentErrorMessage;
+            } else {
+                confirmBtn.disabled = false;
+                warningRow.style.display = 'none';
+            }
+        }
+
+        function showExchangePopup(type, title, message) {
+            const overlay = document.getElementById('exchange-popup-overlay');
+            const iconBox = document.getElementById('popup-status-icon');
+            const titleEl = document.getElementById('popup-status-title');
+            const msgEl = document.getElementById('popup-status-msg');
+
+            if (type === 'success') {
+                iconBox.style.background = '#e8f9ee';
+                iconBox.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#12b76a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+            } else {
+                iconBox.style.background = '#fef3f2';
+                iconBox.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d92d20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+            }
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+        }
+
+        function closeExchangePopup() {
+            const overlay = document.getElementById('exchange-popup-overlay');
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+        }
+
+        // 🟢 असली बैकएंड सर्वर से कनेक्ट करके लाइव एक्सचेंज करने का फंक्शन
+async function processExchangeRequest() {
+    const fromType = document.getElementById('from-coin').value;
+    const toType = document.getElementById('to-coin').value;
+    const fromAmt = parseFloat(document.getElementById('from-amount').value);
+    const confirmBtn = document.getElementById('confirm-exchange-btn');
+
+    if (!userWalletData.uid || userWalletData.uid === "000000") {
+        showExchangePopup('error', 'Authentication Failed', 'Invalid user session. Please log in again.');
+        return;
+    }
+
+    // रिक्वेस्ट जाते समय बटन को डिसेबल करें ताकि यूजर बार-बार क्लिक न कर सके
+    confirmBtn.disabled = true;
+    confirmBtn.innerText = "Processing Trade...";
+
+    try {
+        // आपके रेंडर सर्वर की लाइव एक्सचेंज API को रिक्वेस्ट भेजना
+        const response = await fetch(`${API_BASE_URL}/api/wallet/exchange`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                uid: userWalletData.uid,
+                fromType: fromType,
+                toType: toType,
+                amount: fromAmt
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // सफलता का संदेश और फीस की कटौती साफ़ दिखाना
+            const successMsg = `Successfully exchanged!\n\nNet Received: ${data.netReceived}\nProcessing Fee (3%): ${data.feeCharged}`;
+            showExchangePopup('success', 'Exchange Successful', successMsg);
+
+            // लोकल वॉलेट डेटा और स्क्रीन को नए बैलेंस के साथ अपडेट करना
+            userWalletData = data.updatedBalances;
+            userWalletData.uid = JSON.parse(localStorage.getItem('user_data')).uid; // UID सुरक्षित रखना
+            localStorage.setItem('user_data', JSON.stringify(userWalletData));
+            
+            // इनपुट बॉक्स साफ करना और बैलेंस रिफ्रेश करना
+            document.getElementById('from-amount').value = "";
+            document.getElementById('to-amount').value = "";
+            updateAvailableBalancesOnScreen();
+        } else {
+            // अगर सर्वर कोई एरर भेजता है (जैसे अपर्याप्त बैलेंस)
+            showExchangePopup('error', 'Exchange Failed', data.message || 'Transaction could not be processed.');
+        }
+    } catch (error) {
+        console.error("Exchange API error:", error);
+        showExchangePopup('error', 'Network Error', 'Unable to connect to the central exchange server. Please try again.');
+    } finally {
+        // बटन को वापस सामान्य करना
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "Confirm Exchange";
+    }
+}
+
+    </script>
+</body>
+</html>
